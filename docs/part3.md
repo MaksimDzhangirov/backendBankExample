@@ -1,4 +1,4 @@
-## Как написать и запустить миграцию базы данных в Golang
+# Как написать и запустить миграцию базы данных в Golang
 
 [Оригинал](https://dev.to/techschoolguru/how-to-write-run-database-migration-in-golang-5h6g)
 
