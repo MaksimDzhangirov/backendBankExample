@@ -4,13 +4,15 @@
 
 Hello everyone! Welcome back to the backend master class!
 
-In the previous lecture we've implemented the login API to authenticate user
-and return an access token to the client. However, until now, all of our
-APIs don't require any kind of authentication and authorization yet.
+In the [previous lecture](part21.md) we've implemented the login API to 
+authenticate user and return an access token to the client. However, until 
+now, all of our APIs don't require any kind of authentication and 
+authorization yet.
 
-As you can see here, I'm using No Authorization in this List accounts request, 
-but it's still successful, which means, anyone can actually see all existing
-bank accounts in the system, even if they are not the owner of those accounts.
+As you can see here, I'm using `No Authorization` in this List accounts 
+request, but it's still successful, which means, anyone can actually see all 
+existing bank accounts in the system, even if they are not the owner of those 
+accounts.
 
 ![](../images/part22/1.png)
 
@@ -30,14 +32,14 @@ case, the access token was generated for user Alice. So the list accounts API
 should only return the accounts owned by Alice. All accounts that belong to
 Bob or other users should not be returned.
 
-Basically all of our APIs except create-user and login-user must be protected
-in the same manner. Especially the transfer money API. Right now, we can
-freely transfer money between any accounts. What we want to achieve is, users
-must provide their access token in order for this transfer money API to go 
-through. And if the access token belongs to Alice, then she can only send money
-from the account that belongs to her. Or in the other words, the from account
-should belong to Alice. She should not be able to send money from the account
-owned by Bob or other users, like what we're doing here.
+Basically all of our APIs except `create-user` and `login-user` must be 
+protected in the same manner. Especially the transfer money API. Right now, 
+we can freely transfer money between any accounts. What we want to achieve is, 
+users must provide their access token in order for this transfer money API 
+to go through. And if the access token belongs to Alice, then she can only 
+send money from the account that belongs to her. Or in the other words, the 
+`from` account should belong to Alice. She should not be able to send money 
+from the account owned by Bob or other users, like what we're doing here.
 
 ![](../images/part22/3.png)
 
@@ -108,7 +110,7 @@ func authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 ```
 
 Then in this function, we get its value by calling `ctx.GetHeader` and pass
-in the authorization header key. If the authorization header is empty, or in 
+in the `authorizationHeaderKey`. If the authorization header is empty, or in 
 the other words, its length is `0`, then it means that the client doesn't 
 provide this header. In this case, we create a new error with this message:
 "authorization header is not provided". Then we call `ctx.AbortWithStatusJSON`.
@@ -137,10 +139,10 @@ in reality, the server might support multiple types of authorization schemes,
 such as OAuth, Digest, AWS signature, or many more.
 
 OK, so here we should call `strings.Fields()` function to split the 
-authorization header by space. We expect the result fields to have at least 2
+authorization header by space. We expect the result `fields` to have at least 2
 elements. If it doesn't, then we return an error: "invalid authorization 
 header format" to the client. Otherwise, the authorization type is the first
-element of the fields slice. Here we use `strings.ToLower` to convert it to
+element of the `fields` slice. Here we use `strings.ToLower` to convert it to
 lower case to make it easier to compare.
 
 ```go
@@ -191,7 +193,7 @@ func authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 }
 ```
 
-In case the authorization type is indeed Bearer token, then the access token 
+In case the authorization type is indeed `Bearer` token, then the access token 
 should be the second element of the `fields` slice. Now it's time to parse
 and verify this access token to get the payload. We call 
 `tokenMaker.VerifyToken()`, and pass in the access token. This function returns
@@ -215,7 +217,7 @@ func authMiddleware(tokenMaker token.Maker) gin.HandlerFunc {
 
 Otherwise, the token is valid, so we should store the payload in the context
 before passing it to the next handler. To do that, I'm gonna declare a new
-constant: authorization payload key.
+constant: `authorizationPayloadKey`.
 
 ```go
 const (
@@ -266,7 +268,7 @@ First, I'm gonna list out all of the test cases with this anonymous struct.
 Each test should have a `name` of type `string`, a `setupAuth()` function to
 setup the authorization header of the request. This function should have 3
 input arguments: the `testing.T` object, the HTTP request object, and the
-token maker interface to create the access token. Each test case should also 
+`token.Maker` interface to create the access token. Each test case should also 
 have a separate function to check the response. This function will takes a
 `testing.T` object and a `httptest.ResponseRecorder` object as input. OK, so
 that's how the test case struct looks like. We will come back to add the actual
@@ -400,7 +402,7 @@ func addAuthorization(
 }
 ```
 
-Now let's go back to the test. In this happy case's setup auth function, we
+Now let's go back to the test. In this happy case's `setupAuth` function, we
 just call `addAuthorization()` with the following arguments: `t`, `request`,
 `tokenMaker`, then the `authorizationTypeBearer` constant. We can use any 
 `username` here, let's say "user" and the token valid duration, let's say
@@ -486,7 +488,7 @@ string as the authorization type. And the expected status code will still be
 is expired. In this case, we will send the correct `authorizationTypeBearer`,
 but with a negative token duration, let's say minus 1 minute. By doing so,
 the created token will always be expired. So the response status code should
-also be Unauthorized as in other failure cases.
+also be `Unauthorized` as in other failure cases.
 
 ```go
 func TestAuthMiddleware(t *testing.T) {
@@ -548,12 +550,12 @@ method. This slash is the path prefix of all routes in this group. And we call
 auth middleware, just like what we've done in the unit test. Now for all of 
 the remaining routes, instead of using router, we will use `authRoutes` to add
 them to the group. By doing so, all of the routes in this group will share
-the same auth middleware. That we've just added to the group before. So 
+the same auth middleware, that we've just added to the group before. So 
 basically, every request to these routes must go through the auth middleware 
 first. And that's exactly what we want to achieve to authorize the API 
 requests. Now a lot of our API unit tests will fail because of this change.
 For example, if we run the `TestGetAccountAPI`, it will fail because the API
-is now returning 401 instead of 200.
+is now returning `401` instead of `200`.
 
 ![](../images/part22/10.png)
 
@@ -610,13 +612,18 @@ func (server *Server) createAccount(ctx *gin.Context) {
 
 Next, let's move to the Get Account API. The authorization rule for this API
 is simple. A user should only be able to get the account that he or she owns.
-So, similar as before, I'm gonna copy this statement to get the authorization
-payload from the context. Then before returning the account to the client, 
-here we should check if the `account.Owner` is the same as the 
-`authPayload.Username` or not. If they're different, then we will create
-a new error: "Account doesn't belong to authenticated user". Then we send this
-error with a HTTP status code Unauthorized to the client. And return right away.
-And that's it for the Get Account API.
+So, similar as before, I'm gonna copy this statement
+
+```go
+authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+```
+
+to get the authorization payload from the context. Then before returning the 
+account to the client, here we should check if the `account.Owner` is the 
+same as the `authPayload.Username` or not. If they're different, then we 
+will create a new error: "Account doesn't belong to authenticated user". 
+Then we send this error with a HTTP status code `Unauthorized` to the client. 
+And return right away. And that's it for the Get Account API.
 
 ```go
 func (server *Server) getAccount(ctx *gin.Context) {
@@ -636,7 +643,7 @@ func (server *Server) getAccount(ctx *gin.Context) {
 How about the List Accounts API? Well, as I said at the beginning of the video,
 a user should only be able to list all accounts that belong to him or her. In
 this case, our SQL query doesn't support filtering accounts by owner yet. So
-we have to update it first. In the ListAccounts query of the `account.sql` 
+we have to update it first. In the `ListAccounts` query of the `account.sql` 
 file, I'm gonna add a condition: `WHERE owner = $1` and change the parameter
 index of `LIMIT` and `OFFSET` to `$2` and `$3` respectively. 
 
@@ -669,17 +676,17 @@ This change will break our db test of the `ListAccounts` function. So let's
 open `account_test.go` file to fix it. In `TestListAccounts` function we're
 creating multiple random accounts, each associates with a different random
 user. So to make it simple, I'm just gonna filter by the owner of the last 
-account. I will declare a lastAccount variable to store the information of the
-last generated account in the `for` loop. And here we just assign the 
+account. I will declare a `lastAccount` variable to store the information of 
+the last generated account in the `for` loop. And here we just assign the 
 `createRandomAccount` to the `lastAccount` variable. Then I will add the 
 `Owner` field to this `ListAccountParams` object. It's value should be 
 `lastAccount.Owner`. And since each account belongs to different random owner,
 there won't be many accounts with the same owner as the last account. So,
-we should change the offset to 0 instead of 5, so that we will have at least
+we should change the `Offset` to 0 instead of 5, so that we will have at least
 1 record in the result list. Then here instead of require the list to have
 5 records, we just require it to be not empty. And in this `for` loop we will
 add 1 more check to make sure that the result account owner is the same as the
-lsat account owner.
+`lastAccount` owner.
 
 ```go
 func TestListAccounts(t *testing.T) {
@@ -710,10 +717,10 @@ OK, let's run this test.
 ![](../images/part22/13.png)
 
 It passed. So we're good now. I'm gonna close all of these files, and go back
-to the api/account.go file to add authorization logic to the list account 
+to the `api/account.go` file to add authorization logic to the list account 
 handler. Same as in the create and get account handler, I'm gonna add a 
 statement to get the authorization payload from the context. Then let's add
-the owner filter field with value `authPayload.Username` to this 
+the `Owner` filter field with value `authPayload.Username` to this 
 `ListAccountsParams` struct. And that should be it.
 
 ```go
@@ -781,10 +788,10 @@ in an actual variable because we don't need it for the authorization rule. So
 I just use an underscore here as a placeholder. Now for the authorization 
 logic, we first get the auth payload from the context just like in other
 APIs. Then we check if `fromAccount.Owner` equals to `authPayload.Username`
-or not. If they're not the same, then we create a new error: from account 
-doesn't belong to the authenticated user. And we just send this error to the 
+or not. If they're not the same, then we create a new error: "from account 
+doesn't belong to the authenticated user". And we just send this error to the 
 client with status code `401 Unauthorized`. And we should remove this colon
-becaouse valid is not a new variable. And that will be it!
+because valid is not a new variable. And that will be it!
 
 ```go
 func (server *Server) createTransfer(ctx *gin.Context) {
@@ -864,9 +871,10 @@ func TestGetAccountAPI(t *testing.T) {
 OK, now we will do similar to what we've done in the auth middleware test. 
 Let's copy the `setupAuth` function signature, and paste it to the 
 `TestGetAccountAPI` test case struct. Then also copy the implementation of it
-for the OK case. This time, instead of using a constant string as username here,
-we must use the account owner's username, which is `user.Username`. This
-`setupAuth()` function should be added to all of the existing test cases.
+for the `OK` case. This time, instead of using a constant string as username 
+here, we must use the account owner's username, which is `user.Username`. 
+This `setupAuth()` function should be added to all of the existing test 
+cases.
 
 ```go
 func TestGetAccountAPI(t *testing.T) {
@@ -1034,9 +1042,9 @@ Let's run the Get Account API unit tests.
 
 They're all passed! Awesome!
 
-Now to make it more rebust, I'm gonna add some more test cases to the list.
+Now to make it more robust, I'm gonna add some more test cases to the list.
 
-First, the UnauthorizedUser case, where we use a token of a different user
+First, the `UnauthorizedUser` case, where we use a token of a different user
 who's not the owner of the account. Let's say the username is 
 "unauthorized_user" for example. In this case, we expect the response status
 code to be `http.StatusUnauthorized` instead of `OK`. And we can remove
@@ -1143,12 +1151,12 @@ to get a new one.
 ![](../images/part22/17.png)
 
 OK, it's successful, so I'm gonna copy this new access token. Go back to the
-List account request, open the Authorization tab and paste in the new access
+List account request, open the `Authorization` tab and paste in the new access
 token in this box.
 
 ![](../images/part22/18.png)
 
-Then click Send again. This time the request is successful. And look at the
+Then click `Send` again. This time the request is successful. And look at the
 response data, we have a list of 3 accounts, all belongs to Alice.
 
 ![](../images/part22/19.png)
@@ -1164,7 +1172,7 @@ the request. Token has expired.
 ![](../images/part22/20.png)
 
 That's because this request is still using the old access token. Let's 
-change to the Authorization tab, and paste in the new one. Then send the 
+change to the `Authorization` tab, and paste in the new one. Then send the 
 request again.
 
 ![](../images/part22/21.png)
