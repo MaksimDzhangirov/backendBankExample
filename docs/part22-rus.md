@@ -1,4 +1,4 @@
-# Реализуем middleware для аутентификации и правил авторизации в Golang с помощью Gin
+# Реализуем middleware для аутентификации и правила авторизации в Golang с помощью Gin
 
 [Оригинал](https://www.youtube.com/watch?v=p1dwLKAxUxA)
 
