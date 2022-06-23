@@ -10,7 +10,7 @@
 
 [YouTube ролики](https://www.youtube.com/watch?v=rx6CPDK_5mU&list=PLy_6D98if3ULEtXtNSY_2qN21VCKgoQAE)
 
-Содержание (Content)
+## Содержание (Content)
 
 [1. Проектируем схему БД и генерируем SQL код с помощью dbdiagram.io](docs/part1.md)
 
@@ -53,3 +53,10 @@
 [20. Как создать и проверить JWT и PASETO токен в Golang](docs/part20.md)
 
 [21. Реализуем API для входа пользователя в систему, который возвращает PASETO или JWT токен доступа на Go](docs/part21.md)
+
+[22. Реализуем middleware для аутентификации и правила авторизации в Golang с помощью Gin](docs/part22-rus.md)
+
+[23. Создаём минимизированный Golang Docker образ с помощью Dockerfile с многоступенчатой сборкой](docs/part23-rus.md)
+
+[24. Как использовать Docker сеть, чтобы связать два отдельных контейнера](docs/part24-rus.md)
+
