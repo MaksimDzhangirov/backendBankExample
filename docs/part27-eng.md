@@ -1,20 +1,22 @@
-# Auto build & push docker image to AWS ECR with Github Actions
+# Auto build & push Docker image to AWS ECR with GitHub Actions
 
 [Original video](https://www.youtube.com/watch?v=3M4MPmSWt9E)
 
 Hello everyone and welcome to the backend master class.
 
 In this lecture, we will learn how to use Github Action to automatically
-build and push docker image to AWS ECR. First, we have to create a 
-repository to store our docker images.
+build and push Docker image to AWS ECR. First, we have to create a 
+repository to store our Docker images.
+
+## AWS ECR
 
 So let's open the AWS console, and select the region.
 
 ![](../images/part27/1.png)
 
 I'm in Europe, so I'm gonna choose Ireland ECR, or Amazon Elastic Container
-Registry is a fully-managed docker container registry that makes it easy
-to store, manage and deploy docker container images.
+Registry is a fully-managed Docker container registry that makes it easy
+to store, manage and deploy Docker container images.
 
 You can look for it in the search box at the top of the page.
 
@@ -38,7 +40,7 @@ repository, unless they're given access permissions. Next, we have to fill
 in the name of the repository in this box. I'm gonna use `simplebank`.
 Note that we must follow naming convention. You can also config the `Tag
 immutability`. If enabled then it will prevent image tags from being
-overwritten by subsequent imag pushes using the same tag. I will leave
+overwritten by subsequent image pushes using the same tag. I will leave
 it as disabled by default.
 
 ![](../images/part27/5.png)
@@ -47,7 +49,7 @@ Another setting is `Scan on push`. If enabled, Amazon ECR will do a security
 scan on the image to help identify software vulnerabilities. I will leave
 it as disabled for now. The last setting is `KMS encryption`, which allows
 us to use AWS Key Management Service to encrypt images instead of using
-the default encryption setting: AES 256. For now, let's just use the 
+the default encryption setting: `AES 256`. For now, let's just use the 
 default one. So I'm gonna click `Create repository`.
 
 ![](../images/part27/6.png)
@@ -58,16 +60,18 @@ URI of this repository, which we can use to push and pull images later.
 ![](../images/part27/7.png)
 
 If you're using AWS CLI tool, you can take a look at this page to see 
-commands to push docker images to this repository.
+commands to push Docker images to this repository.
 
 ![](../images/part27/8.png)
 
-Basically, you will have to authenticate your docker client, build your
-docker image, tag your image, and finally push it to the repository.
+Basically, you will have to authenticate your Docker client, build your
+Docker image, tag your image, and finally push it to the repository.
 However, normally we don't push the image directly from our development
-machine. Instead, we will use Github Actions to automatically build, tag
+machine. Instead, we will use GitHub Actions to automatically build, tag
 and push the image for us whenever new codes are merged to the `master`
 branch.
+
+## Workflow for deploy
 
 So let's open our simple bank project in Visual Studio Code. First, I'm
 gonna rename our existing `ci.yml` file to `test.yml` and change its 
@@ -75,12 +79,12 @@ name to "Run unit tests", because that's the main responsibility of
 this workflow. Let's copy the content of this workflow.
 
 Then, I'm gonna create a new workflow named `deploy.yml`. We will use this
-workflow to build docker image and later deploy it to production. Now
+workflow to build Docker image and later deploy it to production. Now
 let's paste in the content of the test workflow and change its name to
 "Deploy to production". This workflow will only be triggered when there's
 a push on `master` branch, so I'm gonna remove the pull request event from
 the list. Then, in the jobs section, we will declare the first one to 
-build and push docker image to Amazon ECR. It will run on `ubuntu-latest`
+build and push Docker image to Amazon ECR. It will run on `ubuntu-latest`
 as normal.
 
 ```yaml
@@ -98,9 +102,9 @@ jobs:
 ```
 
 Next, we have to write the steps to perform this job. For this, I'm gonna
-use some existing Github Actions. On [github.com](https://github.com/marketplace),
+use some existing GitHub Actions. On [github.com](https://github.com/marketplace),
 let's open `Marketplace`, select `Actions` type and search for `AWS ECR`. 
-There are many results, but this Amazon ECR Login Action is the official
+There are many results, but this `Amazon ECR Login Action` is the official
 one, written by AWS.
 
 ![](../images/part27/9.png)
@@ -127,7 +131,7 @@ I'm gonna copy this template
 ```
 
 and paste it to our deploy workflow file. Now, as you can see, the first
-step is to login to Amazon ECR. And the amazon-ecr-login action is
+step is to login to Amazon ECR. And the `amazon-ecr-login` action is
 used for this purpose. But in order for it to work, we have to provide
 some credentials to access our AWS account. In `Credentials and Region`
 section of the documentation we can see how to do it with another Github
@@ -145,7 +149,7 @@ action: `configure-aws-credentials`. So let's copy this template
 and paste it here, as the first step of our workflow. Now we need to 
 provide 2 secrets: AWS access key ID and AWS secret access key. Note that
 we won't write them directly in this file as plaintext, but they should
-be encrypted and stored in the Github secrets. Then will be loaded later
+be encrypted and stored in the GitHub Secrets. Then will be loaded later
 as environment variables when the workflow is run. We will learn how to
 do that in a moment.
 
@@ -162,22 +166,24 @@ name from the URL of this page. And paste it to our workflow here.
         aws-region: us-east-1
 ```
 
-Alright, now let's create some credentials to allow Github to access 
+Alright, now let's create some credentials to allow GitHub to access 
 our AWS account. In the console, I'm gonna search for IAM
 
 ![](../images/part27/11.png)
+
+## AWS IAM
 
 Here it is. You can read more about it in this [documentation page](https://docs.aws.amazon.com/IAM/latest/UserGuide/introduction.html).
 Basically, IAM stands for Identity and Access Management. It is a web
 service that helps you securely control access to AWS resources. You 
 can use it to control who is authenticated and authorized to use your
 AWS resources. There are several kinds of identities you can set up, you
-can see them in the Identities section of the left-hand side menu.
+can see them in the `Identities` section of the left-hand side menu.
 
 ![](../images/part27/12.png)
 
 The first one is `User`, which represents 1 single person or application.
-the second one is `User Group`, which let you specify the same set of
+The second one is `User Group`, which let you specify the same set of
 permissions for multiple users at once.
 
 As you can see in the picture,
@@ -187,10 +193,10 @@ As you can see in the picture,
 you can create groups for different team, with different permissions, 
 such as: `Admins`, `Developers` and `Testers`.
 
-Then another identity type is IAM roles. It is pretty similar to IAM
-user, but instead of being uniquely associated with 1 single person
-or application, a role can be assumable by anyone who needs it. You
-can learn all bout it by reading the documentation.
+Then another identity type is [IAM roles](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles.html). 
+It is pretty similar to IAM user, but instead of being uniquely associated 
+with 1 single person or application, a role can be assumable by anyone 
+who needs it. You can learn all bout it by reading the documentation.
 
 For the purpose of this lecture, we're just gonna use IAM user. So 
 let's go back to the AWS console. Select `Users` section on the left 
@@ -228,7 +234,7 @@ And click `Create Group`.
 
 ![](../images/part27/17.png)
 
-Now you can see the deployment group is created, and the `github-ci` 
+Now you can see the `deployment` group is created, and the `github-ci` 
 user will be added to this group. Let's click `Next: Tags`.
 
 ![](../images/part27/18.png)
@@ -245,8 +251,7 @@ thing we haven't talked about is the permission boundary. If you go
 back to the previous step, where we set up user's group and 
 permissions, you can see the `Set permissions boundary` section at the
 bottom. Basically, it is a way for us to control the maximum 
-permissions this user can have. Basically, it is a way for us to control
-the maximum permissions this user can have.
+permissions this user can have.
 
 ![](../images/part27/20.png)
 
@@ -257,17 +262,17 @@ for now. Alright, everything looks good, let's click `Create user`!
 
 ![](../images/part27/21.png)
 
-And voila, the `github-ci` user has been successfully created. It is 
-added to the deployment group, and the access key for programmatic 
-access is also available. We can now copy and add it to Github 
-secrets.
+And voilà, the `github-ci` user has been successfully created. It is 
+added to the `deployment` group, and the access key for programmatic 
+access is also available. We can now copy and add it to GitHub 
+Secrets.
 
 ![](../images/part27/22.png)
 
-So let's open our Simple bank Github repository. Open the `Settings` tab,
-and select `Secrets` section on the left-hand side menu. Github Secrets are
+So let's open our `Simple bank` GitHub repository. Open the `Settings` tab,
+and select `Secrets` section on the left-hand side menu. GitHub Secrets are
 environment variables that are encrypted, and can be used to provide some
-sensitive input data to Github Actions. There are 2 types of secret. First,
+sensitive input data to GitHub Actions. There are 2 types of secret. First,
 the environment secrets, which will only be available to one specific 
 environment. It is used when you want to have different secret values for
 different environments, such as testing, staging, or production... And the 
@@ -285,13 +290,14 @@ click `Add secret`.
 
 OK, now let's do the same for the second secret: its name should be
 `AWS_SECRET_ACCESS_KEY`. And in the AWS console, let's click `Show` to see
-its value. Copy it, and go back to Github to paste in the value. Then click `Add secret`. 
-Alright, now the AWS access key and secret are ready.
+its value. Copy it, and go back to Github to paste in the value. 
+Then click `Add secret`. Alright, now the AWS access key and secret are 
+ready.
 
-Let's go back to the Github workflow. In the second step, the key will be 
+Let's go back to the GitHub workflow. In the second step, the key will be 
 used to login to Amazon ECR and its output will be used in the third step.
 Here you can see that, the `ECR_REGISTRY` variable will take the output
-registry from the previous step.
+`registry` from the previous step.
 
 ```yaml
     - name: Login to Amazon ECR
@@ -308,7 +314,7 @@ registry from the previous step.
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 ```
 
-We also define another variable for the ECR REPOSITORY. In our case, it 
+We also define another variable for the ECR repository. In our case, it
 should be `simplebank`, as we're created before. So let's paste in the name
 here.
 
@@ -317,10 +323,10 @@ here.
 ```
 
 The last variable we define here is the `IMAGE TAG`. Basically, we will use
-the Github SHA of the commit to tag the image. It's reasonable, because
+the GitHub SHA of the commit to tag the image. It's reasonable, because
 each push to `master` will have different commit hash, so naturally, we 
 would want to tag the image with a new version associated with that commit.
-Now in the run section, we will run 2 commands: the first one is `docker 
+Now in the `run` section, we will run 2 commands: the first one is `docker 
 build`, which will build and tag the image locally. And the second one is 
 `docker push` to push the output image to ECR. All the variables we 
 declared above are used in these 2 commands.
@@ -344,8 +350,8 @@ git add .
 
 to stage everything, `git status` again to see what's gonna be committed.
 Then run `git commit` with a message saying "deploy workflow: build and
-push docker image to ECR". Finally, run `git push origin master` to push it 
-to Github. Oops, the push is rejected. That's because the `master` branch
+push Docker image to ECR". Finally, run `git push origin master` to push it 
+to GitHub. Oops, the push is rejected. That's because the `master` branch
 is protected, so we cannot push changes to it directly, and a pull request
 must be created if we want to merge to `master`. You can add protection
 rules in the `Settings` tab, `Branches` section.
@@ -376,7 +382,7 @@ one more time.
 OK, the PR is successfully created. And the unit test workflow is being 
 run. While waiting for it to finish, let's take a look at the changes we've
 made. So the `deploy` workflow will be triggered on a push to `master` branch.
-The first job is build docker image. It will configure AWS credentials using 
+The first job is build Docker image. It will configure AWS credentials using 
 the repository secrets, then login the Amazon ECR, and finally build, tag
 and push the image. OK, now let's go back to `Conversation` tab. The test
 is still running. And you can see here, the `Merge pull request` button
@@ -419,27 +425,27 @@ steps:
 We're not running this workflow on a Golang image, so let's rename it to
 just: "Check out code". OK, now I think this will fix the issue. Let's
 commit the change: "Deploy workflow: add check out code step". And push 
-it to Github on the ft/ci-build-image branch. We can open this URL 
+it to GitHub on the `ft/ci-build-image` branch. We can open this URL 
 [https://github.com/techschool/simplebank/pull/new/ft/ci-build-image](https://github.com/techschool/simplebank/pull/new/ft/ci-build-image) 
 on the browser to create a new pull request. OK, the PR is created. 
 Let's wait for the unit tests to finish. Oh, looks like the current branch
-is out-of-date with the master branch.
+is out-of-date with the `master` branch.
 
 ![](../images/part27/33.png)
 
-That's because we've merged the previous PR to master. But, haven't updated
+That's because we've merged the previous PR to `master`. But, haven't updated
 it locally yet. So in the terminal, let's checkout the `master` branch, run
-`git pull` to fetch and merge new changes to our local master. Then 
+`git pull` to fetch and merge new changes to our local `master`. Then 
 `git checkout` the feature CI build image branch. Now we can run 
 `git merge master` to merge the `master` branch into current branch. 
-Everything is up to date. So let's push it to Github again. Now we have to
+Everything is up to date. So let's push it to GitHub again. Now we have to
 wait for the unit test. Let's look at the `Files changed` tab. We only 
 add 1 step to check out code, so it's looking good.
 
 ![](../images/part27/34.png)
 
 Alright, now all checks have passed. Let's merge the pull request to
-master. Here instead of a normal Merge we can also use Squash and merge to
+`master`. Here instead of a normal Merge we can also use Squash and merge to
 combine all commits into 1 single commit on `master` branch. It will help
 keep the commit history on `master` clean and tidy.
 
@@ -466,9 +472,11 @@ Here, in the `simplebank` repository we can see 1 new image with the
 latest commit hash tag was just pushed. And its size is 26.17 MB. Awesome!
 So that's how we setup Github Actions to build and push image to ECR.
 
-Before we finish, I'm gonna show you how to check your bulling. It is 
+## How to check your billing
+
+Before we finish, I'm gonna show you how to check your billing. It is 
 very important to control how much you spend on your AWS services. Just 
-click on your account name on the top right corner, and select `My billing
+click on your account name on the top right corner, and select `My Billing
 Dashboard`.
 
 ![](../images/part27/39.png)
@@ -484,16 +492,16 @@ up to now, we're just using about 1% of it.
 ![](../images/part27/41.png)
 
 But why there's also Amazon Simple Storage Service here? Well that's 
-because ECR uses S3 to store the docker images. And we're given 2000 free
+because ECR uses S3 to store the Docker images. And we're given 2000 free
 requests of Put, Copy, Post or List. So if we go beyond these numbers, we
 will be charged some money. If you open the ECR documentation [page](https://docs.aws.amazon.com/AmazonECR/latest/userguide/what-is-ecr.html),
 and read about its pricing, you can see that, the 500 MB free storage per
-month constraint is only applied to private repository. Beside this, ECR
+month constraint is only applied to private repository. Besides this, ECR
 also offers 50 GB always-free storage if you use it for your public 
 repository. So pretty cool, isn't it?
 
 And with this, I'm gonna wrap this lecture about building and pushing 
-docker images to Amazon ECR using Github Actions. I hope you find it 
+Docker images to Amazon ECR using GitHub Actions. I hope you find it 
 useful.
 
 Thanks a lot for watching, happy learning, and see you in the next 

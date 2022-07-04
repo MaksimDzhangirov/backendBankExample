@@ -24,12 +24,12 @@ services with some specific tier types you want.
 
 And on the right hand side, you can see the list of services with their
 free tier constraint. For example, you're given 750 hours per month for
-EC2 instance of type t2.micro or t3.micro 5 GB of S3 standard storage, 750
-hours per month of Relational Database Service. These services are free
-for 12 months. While for DynamoDB, it's always free, but with only `25GB`
-of storage. And for SageMaker, it's only free trial for 2 months. There
-are many many more services you can try for free. Pretty awesome, isn't 
-it?
+`EC2` instance of type `t2.micro` or `t3.micro`, 5 GB of `S3` standard 
+storage, 750 hours per month of Relational Database Service. These services 
+are free for 12 months. While for `DynamoDB`, it's always free, but with 
+only `25GB` of storage. And for `SageMaker`, it's only free trial for 
+2 months. There are many many more services you can try for free. Pretty 
+awesome, isn't it?
 
 Now let's learn how to create a new account and take advantages of this
 free tier offer.
@@ -97,7 +97,7 @@ Fill in your account's password and click `Sign in`.
 
 ![](../images/part26/11.png)
 
-And voila, we're now inside the AWS management console. On the top left menu, 
+And voilà, we're now inside the AWS management console. On the top left menu, 
 you can find a long list of all AWS services.
 
 ![](../images/part26/12.png)
@@ -105,6 +105,8 @@ you can find a long list of all AWS services.
 Or you can search for 1 specific service in this box.
 
 ![](../images/part26/13.png)
+
+## AWS EC2
 
 Let's try EC2. Oh, looks like the service is not fully activated.
 

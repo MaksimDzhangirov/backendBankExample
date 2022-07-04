@@ -1,36 +1,38 @@
-# How to write docker-compose file and control service start-up orders with wait-for.sh
+# How to write Docker-compose file and control service start-up orders with wait-for.sh
 
 [Original video](https://www.youtube.com/watch?v=VcFnqQarpjI)
 
 Hello everyone! Welcome back to the backend master class!
 
-In the last lecture, we've learned how to use docker network to connect 2 
-stand-alone docker containers by names. Today I'm gonna show you how to use 
-`docker-compose`  to automatically setup all services in the same docker 
-network and launch them all at once with a single command.
+In the [last lecture](part24-eng.md), we've learned how to use Docker 
+network to connect 2 stand-alone Docker containers by names. Today I'm gonna 
+show you how to use `docker-compose`  to automatically setup all services in 
+the same Docker network and launch them all at once with a single command.
 
 OK, let's start!
+
+## How to create Docker-compose file
 
 First, I'm gonna create a new file: `docker-compose.yaml` at the root of our
 project. There are a lot of things you can config with a `docker-compose` 
 file. You can read all about them in the documentation by going to 
-[docs.docker.com](https://docs.docker.com), open Reference, Compose file 
-reference, version 3. On the right-hand side menu you can see a list of
+[docs.docker.com](https://docs.docker.com), open `Reference`, `Compose file 
+reference`, `version 3`. On the right-hand side menu you can see a list of
 different syntaxes.
 
 In this video, I will show you some of the most important one that we 
-usually use. Here in the center if the page, we can see an example compose
+usually use. Here in the center if the page, we can see an example `compose`
 file.
 
 ![](../images/part25/1.png)
 
 Basically you define the `docker-compose` version, then a list of services
 that you want to launch together. In this example, there's a `redis` 
-service, a postgres DB service and some other web services for voting and 
+service, a `postgres` DB service and some other web services for voting and 
 computing the result.
 
 Now I'm just gonna copy the first 2 lines of this example, and paste them
-to our `docker-compose.yaml` file. Note that a yaml file is very sensitive
+to our `docker-compose.yaml` file. Note that a `yaml` file is very sensitive
 to indentation.
 
 ```yaml
@@ -51,14 +53,14 @@ and choose 2 as the tab size.
 
 ![](../images/part25/4.png)
 
-OK, now if we press enter, we can see that it is nicely indented with 2 
+OK, now if we press `Enter`, we can see that it is nicely indented with 2 
 spaces. Next we have to declare a list of services we want to launch. The
-first service should be postgres db. For this service, we've gonna use a
-prebuild docker image. Hence, the `image` keyword, followed by the `name` 
+first service should be `postgres` db. For this service, we've gonna use a
+prebuild Docker image. Hence, the `image` keyword, followed by the `name` 
 and `tag` of the image, which is `postgres:12-alpine` in this case. Now 
 we will use the `environment` keyword to specify some environment 
 variables for username, password and db name just like what we did
-in the Github CI workflow.
+in the GitHub CI workflow.
 
 ```yaml
   postgres:
@@ -90,7 +92,7 @@ api:
 ```
 
 This dot means the current root folder. Then we use dockerfile keyword to
-tell `docker-compose` where to find the docker file to build the image. In
+tell `docker-compose` where to find the Docker file to build the image. In
 this case, it's just the Dockerfile at the root of the project. Next, we
 should publish the port `8080` to the host machine so that we can call the 
 simple bank API from outside of the container.
@@ -106,7 +108,7 @@ simple bank API from outside of the container.
 
 One of the most important thing we must do is to tell the `api` service how 
 to connect to the `postgres` service. In order to do that, we will set 1 
-environment variable: `DB_SOURCE`. AS we've seen in the previous lecture, 
+environment variable: `DB_SOURCE`. As we've seen in the previous lecture, 
 setting this environment variable will override the value we declare in the
 `app.env` file and since all services in this `docker-compose` file will
 run on the same network, they can communicate with each other via name.
@@ -127,16 +129,16 @@ api:
 And that's basically it! The docker-compose file is completed. Let's try
 to run it!
 
-If you have the latest docker CLI on your machine, all you have to do is
+If you have the latest `Docker CLI` on your machine, all you have to do is
 to run `docker-compose up`
 
 ```shell
 docker-compose up
 ```
 
-Then docker-compose will automatically search for the `docker-compose.yaml`
+Then Docker-compose will automatically search for the `docker-compose.yaml`
 file in the current folder and run it for you. As you can see here, before
-running the service, it has to build the docker image for our simple 
+running the service, it has to build the Docker image for our simple 
 bank API service first. Then after the image is successfully built, 
 `docker-compose` will start both the `postgres` and the `api` service at
 once.
@@ -193,18 +195,25 @@ just gonna send the create user API.
 Oops, we've got `500 Internal Server Error`, and the reason is: "relation
 users does not exist". Do you know why?
 
+## Update Docker image
+
 Well, that's because we haven't run db migration to create the db schema yet.
-To fix this, we have to update our docker image to run db migration before
+To fix this, we have to update our Docker image to run db migration before
 starting the API server. It would be done in a similar fashion as what 
-we've done in the Github CI workflow: we will have to download 
-golang-migrate binary to the docker image and use it to run the migrations.
+we've done in the GitHub CI workflow: we will have to download 
+golang-migrate binary to the Docker image and use it to run the migrations.
 
 ![](../images/part25/11.png)
 
-So I'm gonna copy these 2 instructions and paste them to the Dockerfile in
+So I'm gonna copy these 2 instructions and paste them to the `Dockerfile` in
 the builder stage.
 
-First we have to run this curl command
+```yaml
+curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar xvz
+sudo mv migrate.linux-amd64 /usr/bin/migrate
+```
+
+First we have to run this `curl` command
 
 ```
 curl -L https://github.com/golang-migrate/migrate/releases/download/v4.14.1/migrate.linux-amd64.tar.gz | tar xvz      
@@ -222,8 +231,8 @@ Then I'm gonna move this second command to the run stage
 sudo mv migrate.linux-amd64 /usr/bin/migrate
 ```
 
-where we will copy from builder the downloaded `migrate` binary to the
-final image. We have to change the path of original migrate file to `/app`,
+where we will copy from `builder` the downloaded `migrate` binary to the
+final image. We have to change the path of original `migrate` file to `/app`,
 because that's the working directory in the builder stage when we download
 and extract the file.
 
@@ -234,19 +243,23 @@ COPY --from=builder /app/migrate.linux-amd64 /usr/bin/migrate
 Then I'm gonna put this file in the same `WORKDIR` folder in the final 
 run stage image, which is also `/app`.
 
+```dockerfile
+COPY --from=builder /app/migrate.linux-amd64 ./migrate
+```
+
 Next, we also have to copy all migration SQL files from the `db/migration`
 folder to the image. So copy `db/migration`. I'm gonna put it in the 
-migration folder under the current working directory.
+`migration` folder under the current working directory.
 
 ```dockerfile
 COPY db/migration ./migration
 ```
 
 Now, one thing we must do is, to install `curl` in the builder stage image
-because by default, the base alpine image doesn't have `curl` preinstalled.
+because by default, the base Alpine image doesn't have `curl` preinstalled.
 To do that, we just have to add a `RUN apk add curl` instruction here.
 Finally, we have to change the way we start the app. So that, it can run 
-the db migration before running the main binary. I'm gonna create a new 
+the db migration before running the `main` binary. I'm gonna create a new 
 file: `start.sh` at the top of our project. Then let's change mod this
 file to make it executable.
 
@@ -254,8 +267,8 @@ file to make it executable.
 chmod +x start.sh
 ```
 
-This file will be run by `/bin/sh` because we're using alpine image, so
-the bash shell is not available. We use `set -e` instruction to make sure
+This file will be run by `/bin/sh` because we're using Alpine image, so
+the `bash` shell is not available. We use `set -e` instruction to make sure
 that the script will exit immediately if a command returns a non-zero
 status. First step, we will run db migration. So we call the `/app/migrate`
 binary, pass in the path to the folder containing all migration SQL files,
@@ -272,17 +285,24 @@ echo "run db migration"
 /app/migrate -path /app/migration -database "$DB_SOURCE" -verbose up
 ```
 
-After running migrate up, we will start the app. All we have to do in 
-this step is to call `exec "$@"`. It basically means: takes all parameters
-passed to the script and run it. In this case, we expect it to be 
-`/app/main` as specified in this `CMD` instruction.
+After running `migrate up`, we will start the app. All we have to do in 
+this step is to call `exec "$@"`.
+
+```shell
+echo "start the app"
+exec "$@"
+```
+
+It basically means: takes all parameters passed to the script and run it. 
+In this case, we expect it to be `/app/main` as specified in this `CMD` 
+instruction.
 
 ```dockerfile
 CMD ["/app/main"]
 ```
 
 To make it work, we will use the `ENTRYPOINT` instruction and specify the
-`/app/start.sh` file as the main entry point of the docker image.
+`/app/start.sh` file as the main entry point of the Docker image.
 
 ```dockerfile
 ENTRYPOINT ["/app/start.sh"]
@@ -294,7 +314,7 @@ passed into the entry point script. So basically, it will be similar
 to running "/app/starts.sh" with "/app/main" as the second argument. But
 by separating the command from the entrypoint we have more flexibility to
 replace it with other command at run time whenever we want. You can read
-more about this in the docker documentation page, in the `CMD` instruction
+more about this in the Docker documentation page, in the `CMD` instruction
 section.
 
 ```dockerfile
@@ -319,7 +339,7 @@ CMD ["/app/main"]
 ENTRYPOINT ["/app/start.sh"]
 ```
 
-OK, now the docker file is updated, let's try to run `docker-compose` 
+OK, now the Docker file is updated, let's try to run `docker-compose` 
 again. But first, we need to run `docker-compose down` to remove all
 existing containers and networks. And we should also remove the 
 `simplebank_api` image, because we want to rebuild the image with the 
@@ -358,16 +378,18 @@ like the db migration script was run, however, it was still not successful.
 
 ![](../images/part25/13.png)
 
+## Waiting for DB start
+
 The service exited with code 1. And in the log, we can see the error: 
 "connection refused". The app cannot connect to the database to run db 
-migration. That's because it takes some time for postgres server to be
+migration. That's because it takes some time for Postgres server to be
 ready, but the app tried to run db migration immediately when it starts.
-At that time the postgres server was not ready to accept connection yet. 
-So to fix this, we have to tell the app to wait for postgres to be ready.
-Before trying to run the db migration script and start the API server. 
+At that time the Postgres server was not ready to accept connection yet. 
+So to fix this, we have to tell the app to wait for Postgres to be ready
+before trying to run the db migration script and start the API server. 
 Now although in the `docker-compose.yaml` file, we can use the 
 `depends_on` instructions to tell `docker-compose` that the `api` service
-depends on the `postgres` service. This only makes sure that the `postgres`
+depends on the `postgres` service, this only makes sure that the `postgres`
 will be started before the `api` service. It doesn't ensure that the
 `postgres` is in ready state before starting the `api` service.
 
@@ -378,11 +400,11 @@ when using the `depends_on` instruction. If we want to wait for a
 service to be ready, we should follow this [link](https://docs.docker.com/compose/startup-order/) to know how to control
 the start up order. There are several tools that has been written to 
 solve this problem, but the one we should use in our case is the 
-sh-compatible `wait-for` script, because we're using an alpine-based 
+sh-compatible `wait-for` script, because we're using an Alpine-based 
 image.
 
 OK, so here is its [Github page](https://github.com/Eficode/wait-for). 
-`Wait-for` is designed to synchronize services like docker containers.
+`Wait-for` is designed to synchronize services like Docker containers.
 And its usage is pretty simple. We just need to run `wait-for`, and pass
 in the `host:port` URL we want to wait.
 
@@ -415,8 +437,8 @@ to make it executable.
 chmod +x wait-for.sh
 ```
 
-Alright, now back to our `Dockerfile`. I'm gonna and 1 more instruction
-to copy the `wait-for.sh` file into the final docker image.
+Alright, now back to our `Dockerfile`. I'm gonna add 1 more instruction
+to copy the `wait-for.sh` file into the final Docker image.
 
 ```dockerfile
 COPY wait-for.sh .
@@ -492,6 +514,8 @@ logs saying that the server is listening and serving HTTP requests on
 port 8080.
 
 ![](../images/part25/16.png)
+
+## Create User API test using Postman
 
 So let's open Postman to try it! I'm gonna send this same create user 
 request as before.
