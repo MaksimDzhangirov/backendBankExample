@@ -3,20 +3,22 @@ package main
 import (
 	"context"
 	"database/sql"
-	"github.com/MaksimDzhangirov/backendBankExample/gapi"
-	"github.com/MaksimDzhangirov/backendBankExample/pb"
-	"github.com/MaksimDzhangirov/backendBankExample/util"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
-	"google.golang.org/protobuf/encoding/protojson"
 	"log"
 	"net"
 	"net/http"
 
 	"github.com/MaksimDzhangirov/backendBankExample/api"
 	db "github.com/MaksimDzhangirov/backendBankExample/db/sqlc"
+	_ "github.com/MaksimDzhangirov/backendBankExample/doc/statik"
+	"github.com/MaksimDzhangirov/backendBankExample/gapi"
+	"github.com/MaksimDzhangirov/backendBankExample/pb"
+	"github.com/MaksimDzhangirov/backendBankExample/util"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	_ "github.com/lib/pq"
+	"github.com/rakyll/statik/fs"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func main() {
@@ -85,8 +87,12 @@ func runGatewayServer(config util.Config, store db.Store) {
 	mux := http.NewServeMux()
 	mux.Handle("/", grpcMux)
 
-	fs := http.FileServer(http.Dir("./doc/swagger"))
-	mux.Handle("/swagger/", http.StripPrefix("/swagger/", fs))
+	statikFS, err := fs.New()
+	if err != nil {
+		log.Fatal("cannot create statik fs:", err)
+	}
+	swaggerHandler := http.StripPrefix("/swagger/", http.FileServer(statikFS))
+	mux.Handle("/swagger/", swaggerHandler)
 
 	listener, err := net.Listen("tcp", config.HTTPServerAddress)
 	if err != nil {

@@ -1,5 +1,7 @@
 # Automatic generate & serve Swagger docs from Go server
 
+[Original video](https://www.youtube.com/watch?v=Uwkxxee7tvk)
+
 Hello guys, welcome to the backend master class!
 
 In this lecture, we will learn how to generate API documentation
