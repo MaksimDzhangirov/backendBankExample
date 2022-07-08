@@ -3,12 +3,15 @@
 [Original video](https://www.youtube.com/watch?v=0EaG3T4Q5fQ)
 
 Hello everyone and welcome to the backend master class. In this lecture, we 
-will learn how to create a production database with AWS RDS. RDS is a managed 
-Relational Database Service on AWS. It supports several kinds of relational
-database, and it is automatically deployed and managed by Amazon Web Service,
-so we don't have to care much about how to maintain or scale the DB cluster.
-It is also super easy to setup. Let's click this `Create database` button to 
-create a new database!
+will learn how to create a production database with AWS RDS.
+
+## AWS RDS
+
+RDS is a managed Relational Database Service on AWS. It supports several kinds
+of relational database, and it is automatically deployed and managed by 
+Amazon Web Service, so we don't have to care much about how to maintain or 
+scale the DB cluster. It is also super easy to set up. Let's click this 
+`Create database` button to create a new database!
 
 ![](../images/part28/1.png)
 
@@ -59,10 +62,10 @@ subnets and IP ranges the DB instance can use in the VPC. Let's leave it as
 default for now. Now comes one important setting. Do you want your DB to be
 publicly accessible or not? If you choose `Yes`, then all the EC2 instances 
 and devices outside of the VPC can connect to your DB. But we will have to 
-setup a security group to allow that. If you choose `No`, then RDS will not 
-assign a public IP address to the DB, thus only EC2 instances and devices
-inside the same VPC can connect to it. For this lecture, I want to access the 
-DB from my local computer, so I'm gonna choose `Yes`.
+setup a `VPC security group` to allow that. If you choose `No`, then RDS 
+will not assign a public IP address to the DB, thus only EC2 instances 
+and devices inside the same VPC can connect to it. For this lecture, I want 
+to access the DB from my local computer, so I'm gonna choose `Yes`.
 
 ![](../images/part28/5.png)
 
@@ -118,12 +121,12 @@ the credentials to access the DB.
 ![](../images/part28/11.png)
 
 As I asked RDS to auto generate a random password for me before, here, in this
-pop-up window, we can see and copy its master password.
+pop-up window, we can see and copy its `Master password`.
 
 ![](../images/part28/12.png)
 
 Now I'm gonna open TablePlus and create a new connection to access our remote
-DB. For the connection name, let's call it AWS Postgres. We don't have the
+DB. For the connection name, let's call it `AWS Postgres`. We don't have the
 host URL yet, so let's leave it empty for now. The username should be `root`.
 And let's paste in the password. The database name is `simple_bank`. And 
 that's it.
@@ -147,7 +150,7 @@ rule of type PostgreSQL.
 The protocol is `TCP`, and the port is `5432`. This `Source` IP is actually my
 current IP address. I can quickly check that by searching for my IP in the 
 browser. OK, so basically, this rule only allows my IP address to access
-the DB at port 5432. But my IP is not static, and I don't want to have to 
+the DB at port `5432`. But my IP is not static, and I don't want to have to 
 update this rule every time my IP changes. So I will change the `Source` to
 `Anywhere`.
 
@@ -166,16 +169,18 @@ it. So let's copy this URL,
 
 ![](../images/part28/18.png)
 
-and paste it to the `Host` of our new connection in TablePlus. Then click `Test`.
-All boxes are green. It means the connection is good.
+and paste it to the `Host` of our new connection in TablePlus. Then 
+click `Test`. All boxes are green. It means the connection is good.
 
 ![](../images/part28/19.png)
 
-So let's click `Connect`. And voila, we're now connected to the database. 
+So let's click `Connect`. And voilà, we're now connected to the database. 
 However, at the moment, it is completely empty. That's because we haven't
 run DB migration to create the tables yet.
 
 ![](../images/part28/20.png)
+
+## Run DB migrations
 
 So let's do that now. In our simple bank project's repo, let's open the
 Makefile. There's a `migrate up` command that we're using to migrate DB 
@@ -188,11 +193,11 @@ migrateup:
 
 All we have to do now is to change this URL 
 `postgresql://root:secret@localhost:5432/simple_bank?sslmode=disable` to 
-the remote DB's URL. the username is still `root`, but the password is 
+the remote DB's URL. The username is still `root`, but the password is 
 different. So let's copy it from the AWS console, and paste it here. The
-`localhost` should also be changed to the remote host. That AWS RDS gives us
+`localhost` should also be changed to the remote host, that AWS RDS gives us
 in the console. The port and DB name are the same, so we don't have to change
-them. But we should remove the `sslmode=disable` parameter. Because we're
+them. But we should remove the `sslmode=disable` parameter, because we're
 connecting to a remote DB, so it's better to use a secured connection. OK, 
 I think that will work.
 
