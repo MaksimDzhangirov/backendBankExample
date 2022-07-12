@@ -4,11 +4,11 @@
 
 Hello everyone, and welcome to the backend master class.
 
-In this lecture, we will learn how to use another service^ AWS secret managers
+In this lecture, we will learn how to use another service: AWS Secret Manager
 to manage the environment variables and secrets for our application.
 
-If you remember, in the previous lecture, we have setup a production database
-on AWS RDS, and this is the URL
+If you remember, in the [previous lecture](part28-eng.md), we have set up a 
+production database on AWS RDS, and this is the URL
 
 ```
 postgresql://root:tupExr0Gp4In4Ww4WHKR@simple-bank.czutruo2pa5q.eu-west-1.rds.amazonaws.com:5432/simple_bank
@@ -21,18 +21,20 @@ we need to generate a stronger token symmetric key. We should not use this
 `TOKEN_SYMMETRIC_KEY=12345678901234567890123456789012` trivial and 
 easy-to-guess value, right?
 
-So, the idea is, in the Github Actions `deploy` workflow, before building and
+So, the idea is, in the GitHub Actions `deploy` workflow, before building and
 pushing the Docker image to ECR, we will replace all environment variables
 in the development `app.env` file with the real production values. By doing so,
 when we run the Docker container on the server later, it will have all the 
 correct settings for production environment. OK, but the question is, where
 do we store the values of these environment variables?
 
-Of course, we cannot put them directly in our Github repository, because it
+Of course, we cannot put them directly in our GitHub repository, because it
 would be very insecure, right? One good solution is to use AWS secret manager
 service.
 
 ![](../images/part29/1.png)
+
+## AWS Secret Manager service
 
 This service allows us to store, manage, and retrieve any kind of secrets for
 our application. It is pretty cheap, just 0.4 dollars per secret per month,
@@ -57,14 +59,14 @@ URL from the Makefile and paste it to this input textbox.
 ![](../images/part29/4.png)
 
 Then let's click `Add row` to add a new pair of key-value. The key will be 
-`DB_DRIVER`, and the value will be postgres. Next, a new row for the 
+`DB_DRIVER`, and the value will be `postgres`. Next, a new row for the 
 `SERVER_ADDRESS`. Its value will be the same as in development: `localhost`
 port `8080`. Note that this is just the internal address of the container.
 Later, when we actually deploy the app to kubernetes, we will learn how to
 setup a load balancer and domain name that will route the API requests to
 the correct container's internal address. OK, now let's add one more row for
 the `ACCESS_TOKEN_DURATION`. Its value will be 15 minutes. And finally, the 
-last row for the TOKEN_SYMMETRIC_KEY. Its value should be a 32-character 
+last row for the `TOKEN_SYMMETRIC_KEY`. Its value should be a 32-character 
 string. There are many ways to generate a random string of 32 characters.
 Today I'm gonna show you how to do it using `openssl` command. It's pretty
 simple, we just run:
@@ -113,7 +115,7 @@ rotation.
 
 In the last step, we can review all the settings of the secret. AWS also give 
 us some sample code for several languages. In case you want to fetch the 
-secret value directly from your code for example. You can use this template,
+secret value directly from your code for example, you can use this template,
 and download the appropriate SDK to do so. We don't need to do that in our
 case, so let's click `Store` to save the secret.
 
@@ -124,18 +126,18 @@ And voila, the secret is successfully created. In this page, we can click
 
 ![](../images/part29/9.png)
 
-Now the secret is ready, we will learn how to update the Github `deploy` 
+Now the secret is ready, we will learn how to update the GitHub `deploy` 
 workflow to retrieve the secret values and save them to the `app.env` file. 
 To develop this feature, I think we will need to install the AWS CLI. It is a
 very powerful tool to help us easily interact with the AWS services via API
 call from the terminal. You can choose the suitable package depending on your
 OS. I'm on macOS, so I will click on this [link](https://awscli.amazonaws.com/AWSCLIV2.pkg)
-to download the installer package. Then open it to start the instalation. And
+to download the installer package. Then open it to start the installation, and
 follow the instructions on the UI.
 
 ![](../images/part29/10.png)
 
-OK, now the AWS CLI package is successfully installed. We can run these 2
+OK, now the AWS CLI package is successfully installed, we can run these 2
 commands to verify that it is working properly:
 
 ```shell
@@ -162,11 +164,11 @@ AWS console and open IAM service.
 
 In the left menu, click on `Users`. Here, we can see the github-ci user that 
 we've set up in one of the previous lecture. On the security credentials tab, 
-we can see the Access Key ID that's being used by Github Action.
+we can see the `Access Key ID` that's being used by GitHub Action.
 
 ![](../images/part29/12.png)
 
-But for security reason, we cannot see its Secret Access Key.
+But for security reason, we cannot see its `Secret Access Key`.
 
 So we have to create a new one to use locally. Click on `Create access key` 
 button.
@@ -177,7 +179,7 @@ Let's copy this access ID and paste it to the terminal.
 
 ![](../images/part29/14.png)
 
-Next, it will ask for the secret access key. Let's show the value and copy 
+Next, it will ask for the `Secret Access Key`. Let's show the value and copy 
 it. Then paste it to the terminal. It will ask for a default region name. I'm
 gonna put `eu-west-1`, because it's the main region I'm currently using. And
 finally, the output format. It's the data format we want AWS to return when we
@@ -237,10 +239,10 @@ Oops, we've got an error: the github-ci user is not authorized to perform
 this request. That's expected, because we haven't grant permissions to allow
 this user to get the secret value yet.
 
-In the IAM page, we can see the github-ci user is ib the deployment group, 
+In the IAM page, we can see the `github-ci` user is ib the `deployment` group, 
 which only has permission to access the Amazon ECR service. What we need to
 do now is to give this group access to the Secret Manager service as well. So,
-in this user group's page, let's open the permissions tab, then click 
+in this user group's page, let's open the `Permissions` tab, then click 
 `Add permissions`, `Attach Policies`.
 
 ![](../images/part29/19.png)
@@ -257,7 +259,7 @@ Here it is! Let's select this `SecretManagerReadWrite` policy and click
 Alright, now all users in this group should have access to secret manager 
 service. Let's go back to the terminal and run the `get-secret-value` command.
 We still get access denied exception. I think the permission we've just added
-needs sometime to be effective. So let's wait a bit, and let's try using the
+needs some time to be effective. So let's wait a bit, and let's try using the
 secret ARN instead of the friendly name:
 
 ```shell
@@ -286,7 +288,7 @@ previous command and pass in the name of the field: "SecretString".
 aws secretsmanager get-secret-value --secret-id simple_bank --query SecretString
 ```
 
-Voila, now we see only the data stored in the secret. However, its value is 
+Voilà, now we see only the data stored in the secret. However, its value is 
 in the form of a string, not a JSON object. We have to add one more argument:
 "--output text" to the command in order to get the output value in JSON format
 as you can see here.
@@ -294,6 +296,8 @@ as you can see here.
 ```shell
 aws secretsmanager get-secret-value --secret-id simple_bank --query SecretString --output text
 ```
+
+## Transform JSON object into environment variables
 
 OK, but now, how can we transform this JSON object into environment variable
 format to store in the `app.env` file? Well, there's a very nice tool called
@@ -313,7 +317,7 @@ and operators that we can use to transform the input JSON data. The most basic
 one is `identity`, represented by just a dot. This filter just returns whatever
 it takes as input unchanged. Then we have the object identifier index, or a dot
 followed by the name of the field we want to get. For example, here we run 
-jq '.foo' so with this input JSON,
+`jq '.foo'` so with this input JSON,
 
 ```shell
         jq '.foo?'
@@ -322,7 +326,7 @@ Output	42
 ```
 
 it will return the value of the field "foo", which is 42. If field doesn't
-exist as in this example, it will return null.
+exist as in this example, it will return `null`.
 
 ```shell
 	    jq '.foo?'
@@ -355,7 +359,7 @@ Output	[{"key":"a", "value":1}, {"key":"b", "value":2}]
 ```
 
 As you can see in this example, it transforms 1 object with 2 keys a, b into
-1 array of 2 objects. Each object has a key and value field. That's exactly 
+1 array of 2 objects. Each object has a `key` and `value` field. That's exactly 
 what we want, so here I'm gonna chain the get secret value command with `jq`
 `to_entries`.
 
@@ -365,9 +369,9 @@ aws secretsmanager get-secret-value --secret-id simple_bank --query SecretString
 
 ![](../images/part29/24.png)
 
-Voila, now we have 5 different objects, each stored 1 separate environment 
+Voilà, now we have 5 different objects, each stored 1 separate environment 
 variable. Next, we have to iterate through them and transform each object into
-the form of key=value, since that's the final format we want to store in the
+the form of `key=value`, since that's the final format we want to store in the
 `app.env` file. For this kind of transformation, we're gonna use the `map`
 operator. The way it works is very similar to the `map` function in Python
 or Ruby. Basically, it iterates through the list of values, apply a transform
@@ -387,7 +391,7 @@ as the transform function.
 aws secretsmanager get-secret-value --secret-id simple_bank --query SecretString --output text | jq 'to_entries|map(.key)'
 ```
 
-Then voila, we've got a new array of strings with all the keys.
+Then voilà, we've got a new array of strings with all the keys.
 
 ![](../images/part29/25.png)
 
@@ -463,7 +467,9 @@ OK, let's check the file to see how it goes.
 Excellent! The whole file content has been replaced with the production 
 environment variables. Exactly as we stored in our secret.
 
-The next step we must do is to plug this command to the Github CI `deploy` 
+## Update `deploy` workflow
+
+The next step we must do is to plug this command to the GitHub CI `deploy` 
 workflow before building the Docker image. But first, I need to reset all the
 changes we've made to the `app.env` and `Makefile`. Let's run `git checkout .`
 in the terminal. OK, now all the content of the files has been reset to the 
@@ -493,7 +499,7 @@ previous step of the workflow. So let's commit this change.
 git commit -m "load secrets and save to app.env"
 ```
 
-Push it to Github.
+Push it to GitHub.
 
 ```shell
 git push origin ft/secrets_manager
@@ -517,7 +523,7 @@ being and pushed to ECR. Alright, everything finishes without any errors.
 
 ![](../images/part29/32.png)
 
-Let's open the AWS console ECR service, in the simple bank repository, we see
+Let's open the AWS console, ECR service. In the `simplebank` repository, we see
 a new image that has just been pushed.
 
 ![](../images/part29/33.png)
@@ -531,8 +537,10 @@ and run `docker pull` this URL in the terminal.
 docker pull 095420225348.dkr.ecr.eu-west-1.amazonaws.com/simplebank:5750a6ef812d5775e9adc07708428dead6a54ceb
 ```
 
-We got an error because docker cannot pull image from this private repository.
-We have to login to the AWS ECR registry first in order to pull or push image.
+## Pull Docker image and run locally
+
+We got an error because Docker cannot pull image from this private repository.
+We have to log in to the AWS ECR registry first in order to pull or push image.
 
 To do that, let's search for `aws ecr get login password`. We're using AWS CLI
 version 2, so let's open this [page](https://awscli.amazonaws.com/v2/documentation/api/latest/reference/ecr/get-login-password.html).
@@ -548,7 +556,7 @@ and run it in the terminal.
 
 ![](../images/part29/34.png)
 
-Voila, the authentication token is successfully returned. Now we will pipe this 
+Voilà, the authentication token is successfully returned. Now we will pipe this 
 token to the `docker login` command, pass in the username AWS, and password 
 from `stdin` argument. Finally, the URL of our private Docker registry.
 
@@ -560,7 +568,7 @@ We must remove the name of the `simplebank` repository from the URL.
 
 ![](../images/part29/35.png)
 
-Alright, logic succeeded. Now we can pull the production `simplebank` image to 
+Alright, login succeeded. Now we can pull the production `simplebank` image to 
 local.
 
 ```shell
@@ -598,7 +606,7 @@ If I echo `DB_SOURCE` now, it's still empty.
 ![](../images/part29/38.png)
 
 To load the variables to the current shell's environment, I will use the 
-source command. So 
+`source` command. So 
 
 ```shell
 source app.env
@@ -608,7 +616,7 @@ Now if I echo `DB_SOURCE` again, it's not empty anymore.
 
 ![](../images/part29/39.png)
 
-OK, so let's copy this source command, and paste it to the `start.sh` file,
+OK, so let's copy this `source` command, and paste it to the `start.sh` file,
 right before the db migrate command.
 
 ```shell
@@ -628,10 +636,10 @@ source /app/app.env
 
 And that's it! I think this will fix the issue.
 
-Let's check out the `master` branch, pull latest change from Github. And 
+Let's check out the `master` branch, pull latest change from GitHub. And 
 create a new feature branch for the fix. I'm gonna call it `ft/load_env`. Add
 the `start.sh` file that we've just updated, commit it with a message: "load
-environment variable before running db migration". Then push it to Github.
+environment variable before running db migration". Then push it to GitHub.
 
 ![](../images/part29/40.png)
 
@@ -640,7 +648,7 @@ in the browser to create a new pull request. Wait a bit for the unit tests
 to complete. Then merge the pull request to `master`. And delete the feature 
 branch. Now we have to wait for the `deploy` workflow to finish. While 
 waiting, I'm gonna check out `master` branch on local. Pull the latest change
-that we've just merged from Github.
+that we've just merged from GitHub.
 
 ![](../images/part29/41.png)
 
