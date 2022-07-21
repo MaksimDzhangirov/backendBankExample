@@ -60,3 +60,19 @@
 
 [24. Как использовать Docker сеть, чтобы связать два отдельных контейнера](docs/part24-rus.md)
 
+[25. Как создать файл Docker-compose и управлять порядком запуска сервисов с помощью wait-for.sh](docs/part25-rus.md)
+
+[26. Как создать бесплатную учётную запись AWS](docs/part26-rus.md)
+
+[27. Автоматическая сборка и отправка Docker образа в AWS ECR с помощью GitHub Actions](docs/part27-rus.md)
+
+[28. Как создать продакшен БД в AWS RDS](docs/part28-rus.md)
+
+[29. Храните и извлекайте конфиденциальные данные для продакшен с помощью AWS Secrets Manager](docs/part29-rus.md)
+
+[30. Архитектура Kubernetes и создание кластера EKS на AWS](docs/part30-rus.md)
+
+[31. Как использовать kubectl и k9s для подключения к Kubernetes кластеру на AWS EKS](docs/part31-rus.md)
+
+[32. Как развернуть веб-приложение в Kubernetes кластере на AWS EKS](docs/part32-rus.md)
+
