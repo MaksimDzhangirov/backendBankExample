@@ -1,4 +1,4 @@
-# How to use kubectl & k9s to connect to a kubernetes cluster on AWS EKS
+# How to use kubectl & k9s to connect to a Kubernetes cluster on AWS EKS
 
 [Original video](https://www.youtube.com/watch?v=hwMevai3_wQ)
 
@@ -13,6 +13,8 @@ As you can see here, our simple bank cluster is already up and running.
 
 So today I'm gonna show you how to connect to this Kubernetes cluster 
 using 2 command line tools: `kubectl` and `k9s`.
+
+## Command line tool - `kubectl`
 
 First, let's search for `kubectl` in the browser. Here it is, let's open
 this [page](https://kubernetes.io/docs/tasks/tools/). So `kubectl` is
@@ -94,7 +96,7 @@ permissions`, and select `Create Inline Policy`.
 
 ![](../images/part31/5.png)
 
-In this form, we have to choose a service. Let's look for EKS. Here it is.
+In this form, we have to choose a service. Let's look for `EKS`. Here it is.
 There are many access levels, and in the `Read` level, you can see the 
 `DescribeCluster` permission.
 
@@ -120,7 +122,7 @@ And click `Create policy`.
 
 ![](../images/part31/9.png)
 
-And voila, now the deployment user group will have full access to EKS 
+And voilà, now the `deployment` user group will have full access to EKS 
 clusters.
 
 ![](../images/part31/10.png)
@@ -216,7 +218,7 @@ or role that's different from the one you're using to authenticate and
 connect to it. Remember that the user I'm using on my local machine is
 `github-ci`. But initially, only the creator of the Amazon EKS cluster
 has the master permissions to configure the cluster. If we want to extend
-this permission to other users, we must add the aws-auth ConfigMap to
+this permission to other users, we must add the `aws-auth ConfigMap` to
 the configuration of the EKS cluster.
 
 OK, so how can we fix this?
@@ -233,7 +235,7 @@ aws sts get-caller-identity
 }
 ```
 
-As you can see, it's the github-ci user, not the root user we used to
+As you can see, it's the `github-ci` user, not the `root` user we used to
 create the cluster. That's why it doesn't have the permissions to access
 the cluster. So if we run this `kubectl get pods` command,
 
@@ -243,10 +245,10 @@ error: You must be logged in to the server (Unathorized)
 ```
 
 it will throw the same error as when we run the `cluster-info` command
-before. In order to fix this, we must use the access key ID and secret
-of the cluster creator account. At the moment, we're still using the 
-access key of the `github-ci` user as you can see in this aws credentials
-file.
+before. In order to fix this, we must use `aws_access_key_id` and 
+`aws_secret_access_key` of the cluster creator account. At the moment, we're 
+still using the access key of the `github-ci` user as you can see in this 
+aws credentials file.
 
 ```shell
 cat ~./.aws/credentials
@@ -256,7 +258,7 @@ aws_secret_access_key = xICCy4MIoHInm0JoitDNWHWvJUDEVShLtzuRe/Yz
 ```
 
 Alright, now let's create a new access credential for the root user: 
-`techschool`. I'm gonna open My Security Credential page in a new tab.
+`techschool`. I'm gonna open `My Security Credential` page in a new tab.
 
 ![](../images/part31/15.png)
 
@@ -278,10 +280,10 @@ vi ~./.aws/credentials
 
 We can list multiple different access keys in this file. So here I will
 put the old credentials under a profile named `github`. And the new 
-access keys will go into the default profile. First, paste in the access
-key ID, followed by the secret access key, I'm gonna copy its value from
-the AWS console, and paste it to the file. Alright, let's save this 
-file.
+access keys will go into the `default` profile. First, paste in 
+`aws_access_key_id`, followed by `aws_secret_access_key`, I'm gonna copy its 
+value from the AWS console, and paste it to the file. Alright, let's save 
+this file.
 
 ```
 [default]
@@ -316,12 +318,12 @@ To futher debug and diagose cluster problems, use 'kubectl cluster-info dump'
 
 Here you go! The info is successfully returned. It contains the address
 of the control plane and CoreDNS of the cluster. So it worked! We can
-now access the cluster using the credentials of the root user. Next,
+now access the cluster using the credentials of the `root` user. Next,
 I'm gonna show you how to give `github-ci` user access to this cluster
-as well, because later we would want Github to automatically deploy
+as well, because later we would want GitHub to automatically deploy
 the app for us whenever we push new changes to the `master` branch.
 
-But first, let's learn how to tell AWS CLU to use the Github 
+But first, let's learn how to tell AWS CLU to use the GitHub 
 credentials. It's pretty easy, we just need to 
 
 ```shell
@@ -342,10 +344,15 @@ then this time, the `cluster-info` command will be successful again.
 
 Alright, but how can we allow Github user to access the cluster?
 
-Well, to do that, we need to add this user to a special config map
+Well, to do that, we need to add this user to a special ConfigMap
 as shown in this example.
 
 ```
+apiVersion: v1
+kind: ConfigMap 
+metadata: 
+  name: aws-auth 
+  namespace: kube-system
 data:
   mapRoles: |
     - rolearn: <ARN of instance role (not instance profile)>
@@ -361,7 +368,7 @@ So let's open the project in Visual Studio Code. I will create a new
 folder `eks` to store all files related to Kubernetes.
 
 First, let's add a new file called `aws-auth.yaml`. Next, we have to 
-add the `github-ci` user to the map users section of this file. So
+add the `github-ci` user to the `mapUsers` section of this file. So
 I'm gonna copy this example from the step 7 of this [tutorial](https://aws.amazon.com/premiumsupport/knowledge-center/amazon-eks-cluster-access/)
 and paste it to our `aws-auth.yaml` file.
 
@@ -385,8 +392,8 @@ data:
         - system:masters
 ```
 
-We don't need the `map roles` section, so let's delete it. Now, in the
-`map users` section, we have to put correct ARN of the `github-ci` user
+We don't need the `mapRoles` section, so let's delete it. Now, in the
+`mapUsers` section, we have to put correct ARN of the `github-ci` user
 we want to give access to the cluster. We can find its value in the
 IAM console. Let's open the `Users` page, select `github-ci` and click
 this button to copy its user ARN.
@@ -410,7 +417,7 @@ data:
 ```
 
 The username should be `github-ci`. The groups should remain the same
-as `system:masters`. Okay, now we need to apply this config map to
+as `system:masters`. Okay, now we need to apply this `ConfigMap` to
 the RBAC configuration of the cluster.
 
 Let's run this `kubectl apply -f aws-auth.yaml` command in the terminal,
@@ -434,9 +441,9 @@ the `kubectl cluster-info` command.
 
 Oh, we still got the same error: "Unauthorized".
 
-So what happened? Let's go back to check the config map. OK, I see.
+So what happened? Let's go back to check the `ConfigMap`. OK, I see.
 Looks like we've got a typo here in the user ARN value. The correct
-value should not have a duplicate ARN prefix. So let's fix it!
+value should not have a duplicate `arn` prefix. So let's fix it!
 
 ```yaml
 apiVersion: v1
@@ -459,7 +466,7 @@ kubectl apply -f eks/aws-auth.yaml
 ```
 
 Oops, I forgot that we're still using the `github-ci` profile. We 
-must change to the default root profile first.
+must change to the default `root` profile first.
 
 ```shell
 export AWS_PROFILE=default
@@ -505,6 +512,8 @@ commands, that requires you to copy around the name or id of the
 services or pods. To make it easier to interact with the cluster, we
 can use a tool called `k9s`.
 
+## Command line tool - `k9s`
+
 It gives us a very nice user interface, and a set of convenient 
 shortcuts to talk to the Kubernetes cluster. If you're on a mac, we can
 install it with `Homebrew`. Let's run 
@@ -527,7 +536,7 @@ currently listing all pods of the cluster.
 ![](../images/part31/22.png)
 
 There are 2 `core-dns` pods of the `kube-system`. Because of some 
-reasons, their status is still pending, but we will deal with it later, 
+reasons, their status is still `Pending`, but we will deal with it later, 
 in the next lecture.
 
 For now, I'm gonna show you some useful shortcut commands to navigate
@@ -539,7 +548,7 @@ show you all available namespaces of the cluster.
 ![](../images/part31/23.png)
 
 You can use the arrows to select the namespace you want to access, and
-simply press enter to go into that namespace.
+simply press `Enter` to go into that namespace.
 
 And to get out to the previous screen, just press `Escape`.
 
@@ -552,7 +561,7 @@ To list all pods, just type a colon, then `pods` and `Enter`.
 
 ![](../images/part31/25.png)
 
-If you have cronjobs running on the cluster, you can list them by 
+If you have `cronjobs` running on the cluster, you can list them by 
 typing a colon, followed by `cj`, `Enter`.
 
 ![](../images/part31/26.png)
@@ -574,13 +583,13 @@ resource, just press `d`.
 You will see all the information of your chosen resource. And you can 
 always use the `Escape` key to go back to the previous screen.
 
-Now let's take a look at the config map that we're updated before.
+Now let's take a look at the `СonfigMap` that we're updated before.
 
 ![](../images/part31/29.png)
 
 It's the `aws-auth` config map in the `kube-system` namespace. If we
-press `d` to describe it, we will see the `github-ci` user in the map
-users section.
+press `d` to describe it, we will see the `github-ci` user in the `mapUsers` 
+section.
 
 ![](../images/part31/30.png)
 

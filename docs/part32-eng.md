@@ -8,10 +8,12 @@ In the previous lectures, we've learned how to create an EKS cluster
 on AWS and connect to it using `kubectl` or `k9s`.
 
 Today let's learn how to deploy our simple bank API service to
-this Kubernetes cluster. So basically, we have built a docker image
+this Kubernetes cluster. So basically, we have built a Docker image
 for this service and push it to Amazon ECR, and now we want to run 
 this image as a container in the Kubernetes cluster. In order to do
 so, we will need to create a deployment.
+
+## Deployment
 
 Deployment is simply a description of how we want our image to be
 deployed. You can read more about it on the official Kubernetes 
@@ -192,7 +194,7 @@ describe this deployment object. OK, so the image URL is correct.
 
 ![](../images/part32/8.png)
 
-And in the events list, it says scaled up replica set 
+And in the `Events` list, it says scaled up replica set 
 `simple-bank-api-deployment` to 1. All looks pretty normal. But
 why this deployment is not ready yet? Let's press `Enter` to open
 the list of pods that this deployment manages.
@@ -200,11 +202,11 @@ the list of pods that this deployment manages.
 ![](../images/part32/9.png)
 
 OK, so looks like the pod is not ready yet. Its status is still
-pending. Let's describe it to see more details. 
+`Pending`. Let's describe it to see more details. 
 
 ![](../images/part32/10.png)
 
-If we scroll down to the bottom to see the events list, we can 
+If we scroll down to the bottom to see the `Events` list, we can 
 see that there's a warning event: `FailedScheduling`. And that's
 because there are no nodes available to schedule pods. Alright,
 now we know the reason, let's go to the AWS console page, and 
@@ -213,15 +215,15 @@ lectures.
 
 ![](../images/part32/11.png)
 
-Voila, here it says "This cluster does not have any attached 
-nodes". Let's open the configuration tab, and select `Compute`
+Voilà, here it says "This cluster does not have any attached 
+nodes". Let's open the `Configuration` tab, and select `Compute`
 section.
 
 ![](../images/part32/12.png)
 
 In the `Node Groups` table, we can see that the desired size is 
 0, so that's why it didn't create any nodes (or EC2 instances).
-To fix this, let's open the simple-bank node group.
+To fix this, let's open the `simple-bank` node group.
 
 ![](../images/part32/13.png)
 
@@ -238,7 +240,7 @@ limit range of the minimum and maximum capacity. Ok, let's click
 ![](../images/part32/15.png)
 
 Now the desired capacity has been changed to 1. And in the 
-`Activity` tab, if we refresh the activity history, we can see
+`Activity` tab, if we refresh the `Activity history`, we can see
 a new entry saying launching a new EC2 instance.
 
 ![](../images/part32/16.png)
@@ -286,7 +288,7 @@ of nodes.
 ![](../images/part32/23.png)
 
 This is the only node of the cluster. Let's describe it! If we 
-scroll down a bit to the capacity section, we can see some 
+scroll down a bit to the `Capacity` section, we can see some 
 hardware configurations of the node, such as the CPU or memory.
 
 ![](../images/part32/24.png)
@@ -316,7 +318,7 @@ There is also a documentation [page](https://docs.aws.amazon.com/AWSEC2/latest/U
 of Amazon that gives us the number of ENIs and Ips per ENI for each 
 instance type. If you still remember, we're using a `t3.micro`
 instance for our node group, so according to this table, it has
-2 ENI and 2 IPs per ENI. No if we put these numbers into the
+2 ENI and 2 IPs per ENI. Now if we put these numbers into the
 formula, we will get `2 * (2 - 1) + 2 = 4`, which is the maximum
 number of pods that can run on this type of instance. If you're
 lazy to do the math, you can just serach for `t3.micro` on this
@@ -370,7 +372,7 @@ Then scroll all the way down, and click `Next`.
 ![](../images/part32/32.png)
 
 For the node group configuration, we will use the default values:
-Amazon Linux 2 for the image type, and `On-demand` for the 
+`Amazon Linux 2` for the image type, and `On-demand` for the 
 capacity type. But for the instance type, we will choose 
 `t3.small` instead of `t3.micro` as before. Here we can see the
 max ENI is 3, and max IP is 12.
@@ -432,7 +434,7 @@ console.
 ![](../images/part32/40.png)
 
 Yay, I think it works, because this time the color has just 
-changed from red to green, and it says READY 1/1 here.
+changed from red to green, and it says `READY 1/1` here.
 
 ![](../images/part32/41.png)
 
@@ -445,7 +447,7 @@ Let's check out the pods.
 
 ![](../images/part32/43.png)
 
-There's 1 pod, and its status is Running. Perfect!
+There's 1 pod, and its status is `Running`. Perfect!
 
 Let's describe this pod. Scroll all the way to the bottom.
 We can see several normal events. And they're all successful.
@@ -509,7 +511,7 @@ new file: `service.yaml` inside the `eks` folder. Then paste
 in the content of the example service.
 
 It also starts with the api version, just like Deployment 
-object. But now, the kind of this object is Service.
+object. But now, the kind of this object is `Service`.
 
 ```yaml
 apiVersion: v1
@@ -540,10 +542,11 @@ spec:
 
 OK, next we have to specify the rule for ports. This service will listen
 to HTTP API requests, so the protocol is `TCP`, then, `80` is the port, on 
-which the service will listen to incoming requests. And finally, the target 
-port is the port of the container, where the requests will be sent to. In 
-our case, the container port is `8080`, as we've specified in the `deployment`
-file. So I'm gonna change this target port value to 8080 in `service` file.
+which the service will listen to incoming requests. And finally, the 
+`targetPort` is the port of the container, where the requests will be sent 
+to. In our case, the container port is `8080`, as we've specified in the 
+`deployment` file. So I'm gonna change this target port value to `8080` 
+in `service` file.
 
 ```yaml
 spec:
@@ -563,14 +566,14 @@ kubectl apply -f eks/service.yaml
 service/simple-bank-api-service created
 ```
 
-Let's check it out in the `k9s` console. I'm gonna search for services.
+Let's check it out in the `k9s` console. I'm gonna search for `services`.
 
 ![](../images/part32/49.png)
 
 Here we go. In the list of services, beside the system service of Kubernetes
 we can see our `simple-bank-api-service`. Its type is `ClusterIP`, and here's
-its internal cluster IP. And it's listening on port 80 as we've specified in
-the yaml file. But look at the `EXTERNAL-IP` column! It's empty! Which 
+its internal cluster IP. And it's listening on port `80` as we've specified 
+in the `yaml` file. But look at the `EXTERNAL-IP` column! It's empty! Which 
 means this service doesn't have an external IP. So how can we access it from
 outside? Well, in order to expose the service to the outside world, we need
 to change its type. By default, if we don't specify anything, the service's
@@ -616,6 +619,8 @@ let's try `nslookup` again.
 This time, it's successful. You can see that there are 2 IP addresses
 associated with this domain. That's because it's a network load balancer
 of AWS.
+
+## Sending requests to the server
 
 OK, now let's try sending some requests to the server!
 
@@ -683,7 +688,7 @@ the service is handling well the load balancing of the request when there
 are multiple pods.
 
 Now before we finish, let's check out the resources of the node. I'm
-gonna describe this node, and scroll down to the capacity section.
+gonna describe this node, and scroll down to the `Capacity` section.
 
 ![](../images/part32/62.png)
 
@@ -702,10 +707,10 @@ have learned how to deploy a web service application to the
 Kubernetes cluster on AWS. And we were able to send requests to the
 service from outside of the cluster via the external IP, or an 
 auto-generated domain name of the service. But of course, we don't
-want to use that kind of domain. For integrating with the frontend
+want to use that kind of domain for integrating with the frontend
 for external services, right? What we would like to achieve is to 
 be able to attach the service to a specific domain name that we have
-bought, such as simplebank.com or something like that, right?
+bought, such as `simplebank.com` or something like that, right?
 
 That will be the topic of the next video. I hope you enjoy this 
 video. Thanks a lot for watching! Happy learning, and see you
