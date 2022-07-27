@@ -1,4 +1,4 @@
-# Register a domain & set up A-record using Route53
+# Register a domain & set up A-record using Route 53
 
 [Original video](https://www.youtube.com/watch?v=-JF2ukmW3i8)
 
@@ -15,6 +15,8 @@ which is very long, hard to remember, and not static.
 So normally we wouldn't want to use it directly to connect with the front-end
 or other external services. Instead, we should assign a specific 
 easy-to-remember domain name to the API.
+
+## Buy and register a domain
 
 And in order to do so, we must buy a domain name first. And that's exactly
 what I'm gonna show you in this video. There are many websites on which 
@@ -34,7 +36,7 @@ we want in this box, for example, `simple-bank`.
 
 ![](../images/part33/4.png)
 
-And click Check. OK, looks like the `simple-bank.com` domain is unavailable.
+And click `Check`. OK, looks like the `simple-bank.com` domain is unavailable.
 
 ![](../images/part33/5.png)
 
@@ -55,8 +57,8 @@ for the first 25 hosted zones, or 0.1 dollars per hosted zone per
 month for additional ones. There are also fees for queries, such as, 
 0.4 dollars per million standard queries for the first 1 billion queries
 per month, or 0.2 dollars per million standard queries for over 1 
-billion queries per month. The fees will be a bit higher for latency based
-routing queries, or Geo DNS and Geo-proximity queries. You can read all
+billion queries per month. The fees will be a bit higher for Latency Based
+Routing Queries, or Geo DNS and Geoproximity Queries. You can read all
 about it on [this page](https://aws.amazon.com/route53/pricing/#Queries) if 
 you want.
 
@@ -69,8 +71,8 @@ registrant. First, the contact type, which can be either a person, a
 company, an association, or a public body. In my case, it's a person.
 Therefore, in the next 2 fields, I'm gonna fill in my first and last
 name. Then my personal email address and my phone number. I also need
-to provide my address in this box. Then the country, the city, and 
-finally, the postal code. At the bottom, there's an option for
+to provide my address in this box `Address 1`. Then the country, the city, 
+and finally, the postal code. At the bottom, there's an option for
 privacy protection. If it's enabled, some of your contact details will
 be hidden from the public. Alright, let's continue!
 
@@ -91,7 +93,7 @@ of the registrant is valid. All we have to do is to click this link.
 
 ![](../images/part33/11.png)
 
-Then voila, the email has been successfully verified.
+Then voilà, the email has been successfully verified.
 
 ![](../images/part33/12.png)
 
@@ -121,7 +123,7 @@ operation. Let's check this box to agree, and complete the order.
 
 ![](../images/part33/14.png)
 
-And voila, our order has been submitted successfully. It might take a 
+And voilà, our order has been submitted successfully. It might take a 
 little while to complete, so if we go to the domains page now, we 
 can see its status as "Domain registration in process".
 
@@ -141,7 +143,7 @@ auto-renew feature is enabled, but the transfer lock is not.
 
 ![](../images/part33/17.png)
 
-I'm gonna click on this domain to see more details. Voila, there's much 
+I'm gonna click on this domain to see more details. Voilà, there's much 
 more information about our domain on this page.
 
 ![](../images/part33/18.png)
@@ -205,7 +207,7 @@ Although it's possible to copy and paste these 2 IP addresses to the A
 record, I think we should not to do that, because the IPs in Kubernetes 
 cluster are very ephemeral, and can change at any time if the pod is 
 restarted, for example. So in the form, instead of using the real IP
-values, we've gonna use an Alias, and in our case, it is an alias to
+values, we've gonna use an `Alias`, and in our case, it is an alias to
 a Network Load Balancer. Next, we have to choose the region of the 
 load balancer, which is `eu-west-1`, since our cluster is deployed
 in this region. Finally, we can paste in the URL of the load balancer
@@ -213,7 +215,7 @@ of our API service. And click `Create Records`.
 
 ![](../images/part33/26.png)
 
-Voila, the A record for the subdomain `api.simple-bank.org` has 
+Voilà, the A record for the subdomain `api.simple-bank.org` has 
 been successfully created.
 
 ![](../images/part33/27.png)

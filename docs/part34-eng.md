@@ -16,7 +16,7 @@ This is fine as long as we just have 1 single service, but it would be a
 pain when we have a lot more of them, because we would have to create a 
 lot of A records to route traffic to each of the services.
 
-## Use Ingress to setup A record
+## Use Ingress to set up A record
 
 A better solution in this case would be to use [Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/),
 which will allow us to setup A record only once, but can define multiple
@@ -33,7 +33,7 @@ As you can see in this diagram,
 
 ![](../images/part34/1.png)
 
-the request from client will go through the ingress-managed load balancer,
+the request from client will go through the Ingress-managed load balancer,
 and when it reaches Ingress, it will follow the routing rule to go to the
 correct service and pods. If we scroll down a bit, we will see an example
 of a minimal Ingress resource with a simple routing rule.
@@ -59,8 +59,8 @@ spec:
               number: 80
 ```
 
-And if we scroll down all the way to the wild card section, there's 
-another example of the Ingress resource
+And if we scroll down all the way to the `Hostname wildcards` section, 
+there's another example of the Ingress resource
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -126,7 +126,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 ```
 
-Then we will have a metadata section, just like other resources that
+Then we will have a `metadata` section, just like other resources that
 we deployed in previous lectures. Here, I'm gonna name it 
 `simple-bank-ingress`.
 
@@ -135,10 +135,10 @@ metadata:
   name: simple-bank-ingress
 ```
 
-Now we come to the specification section. In this section, we can define
+Now we come to the `specification` section. In this section, we can define
 as many routing rules as we want, to route traffics to different services.
 In our case, we only have 1 service: the `simple-bank` API, so we just 
-need to write only 1 single rule. For the jost, I'm gonna set it to 
+need to write only 1 single rule. For the host, I'm gonna set it to 
 `api.simple-bank.org`, just like what we're setting in the domain's
 A record. Next, we can specify which HTTP path will satisfy the rule.
 In this case, we want to accept all requests sending to the host, so
@@ -218,7 +218,7 @@ If we describe the Ingress,
 ![](../images/part34/5.png)
 
 we can see that it will send route the traffics to the `simple-bank`
-API service backend, exactly as we have configured in the yaml file.
+API service backend, exactly as we have configured in the `yaml` file.
 But now there's one problem: This Ingress doesn't have an external
 address yet. It's still empty as you can see here.
 
@@ -229,8 +229,8 @@ this Ingress? Well, if you look at the Kubernetes documentation,
 you will find out that, just creating an Ingress resource is not enough.
 
 In order for it to be fully functional, we must have an Ingress controller
-installed in the cluster. So let's open this Ingress controller page to
-learn how to install it.
+installed in the cluster. So let's open this Ingress controller [page](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/) 
+to learn how to install it.
 
 As it's clearly written [here](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/),
 unlike other types of controllers, Ingress controllers are not started 
@@ -240,7 +240,7 @@ lecture, I will show you how to install the `nginx` Ingress controller.
 
 So let's open this [link](https://git.k8s.io/ingress-nginx/README.md#readme)!
 
-It will lead us to the `nginx` Ingress Github page. Then let's follow
+It will lead us to the `nginx` Ingress GitHub page. Then let's follow
 this [Getting started link](https://kubernetes.github.io/ingress-nginx/deploy/)
 to read its documentation. Depending on which cloud provider you're
 using, you might need to use different command to install NGINX Ingress
@@ -269,7 +269,7 @@ kubectl get pods -n ingress-nginx \
     -l app.kubernetes.io/name=ingress-nginx --watch
 ```
 
-or we can simply search for pods in the `k9s` console. Here, in this list,
+or we can simply search for `pods` in the `k9s` console. Here, in this list,
 
 ![](../images/part34/9.png)
 
@@ -280,8 +280,8 @@ namespace. So this time, if we check out our simple bank Ingress,
 
 we can see that it now has an external address to be accessed by the 
 outside world. All we have to do now, is to copy this address, then go
-back to the Route 53's `Hosted zone` page, select the `api.simple-bank.org`
-A record, click `Edit record` paste in the address of the Ingress in this
+back to the Route53's `Hosted zone` page, select the `api.simple-bank.org`
+A record, click `Edit record`, paste in the address of the Ingress in this
 box, and save it!
 
 ![](../images/part34/11.png)
@@ -318,12 +318,12 @@ I'm gonna use Postman to send this login user request.
 
 ![](../images/part34/13.png)
 
-And voila, the request is successful.
+And voilà, the request is successful.
 
 The Ingress that we've just set up is working properly.
 
 However, there's one more thing that is still not right. It's the 
-class of the Ingress. For now, it is None, while it should be Nginx
+class of the Ingress. For now, it is `None`, while it should be `Nginx`
 instead.
 
 ![](../images/part34/14.png)
@@ -331,7 +331,7 @@ instead.
 To fix this, we have to deploy an Ingress class object to the 
 cluster. Now, if you're using older version of Kubernetes before 
 1.18, the Ingress classes are specified this `kubernetes.io/ingress.class`
-annotation on the Ingress. So in the metadata section of `ingress.yaml`
+annotation on the Ingress. So in the `metadata` section of `ingress.yaml`
 file, we can add the annotations: `kubernetes.io/ingress.class: nginx`.
 
 ```yaml
@@ -342,8 +342,8 @@ metadata:
 ```
 
 Like that and redeploy the Ingress. However, this annotation is
-deprecated since version 1.18, so now we should use the Ingress
-class resource instead.
+deprecated since version 1.18, so now we should use the `IngressClass` 
+resource instead.
 
 Let's copy this example
 
@@ -361,7 +361,7 @@ spec:
 ```
 
 and paste it to the top of our `ingress.yaml` file. We can use the 
-triple dash to separate the 2 resources in the same yaml file. The
+triple dash to separate the 2 resources in the same `yaml` file. The
 ingress class declaration also starts with the API version, then
 the kind of resource, which is `IngressClass`.
 
@@ -370,8 +370,16 @@ apiVersion: networking.k8s.io/v1
 kind: IngressClass
 ```
 
-In the `metadata` section, I'm gonna rename it to nginx and in the 
+In the `metadata` section, I'm gonna rename it to `nginx` and in the 
 `spec` section, we should change the controller to `k8s.io/ingress-nginx`.
+
+```yaml
+metadata:
+  name: nginx
+spec:
+  controller: k8s.io/ingress-nginx
+```
+
 Finally, we can remove all of these parameters as they're not needed
 in our case. 
 
@@ -382,7 +390,7 @@ in our case.
     name: external-lb
 ```
 
-Now as the Ingress class nginx is defined, we should add it to 
+Now as the Ingress class `nginx` is defined, we should add it to 
 the `simple-bank` Ingress by adding this to the `spec` section:
 `ingressClassName: nginx`.
 
