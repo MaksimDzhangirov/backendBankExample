@@ -1,4 +1,4 @@
-# Automatic deploy to Kubernetes with Github Action
+# Automatic deploy to Kubernetes with GitHub Action
 
 [Original video](https://www.youtube.com/watch?v=GVY-zze0V_U)
 
@@ -9,15 +9,17 @@ develop and deploy a Golang backend web application from scratch.
 However, until now, we're still doing the deployment part manually
 by running the `kubectl` command in the terminal. So, in this last 
 lecture of the course, I'm gonna show you how to automate it using
-Github Action.
+GitHub Action.
 
 Alright, let's start!
 
-As you can see, in the previous lectures, we have all the kubernetes
+## Automate deployment using GitHub Action
+
+As you can see, in the previous lectures, we have all the Kubernetes
 deployment `yaml` files in the `eks` folder. So all we have to do
-now is to install `kubectl` in the Github Action, then use it to 
+now is to install `kubectl` in the GitHub Action, then use it to 
 deploy these files to the production cluster. To do that, let's open
-the Github `deploy` workflow file.
+the GitHub `deploy` workflow file.
 
 First, I'm gonna rename this `build` job to `deploy`, because now we're
 not just building the image, but we're also deploying it.
@@ -30,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
 ```
 
-Then we will search for `kubectl` action in the Github marketplace.
+Then we will search for `kubectl` action in the GitHub Marketplace.
 
 ![](../images/part36/1.png)
 
@@ -80,15 +82,15 @@ In my case, it is 1.21.3.
       id: install
 ```
 
-Alright, after this step, `kubectl` will be installed on the Github 
+Alright, after this step, `kubectl` will be installed on the GitHub 
 runner machine.
 
-Next step, we will deploy the docker image from ECR to our EKS
+Next step, we will deploy the Docker image from ECR to our EKS
 cluster. This step should be run at the end of the workflow. Here
 I use a pipe because we're gonna run multiple commands to deploy
 different types of resources to the cluster.
 
-First, the aws-auth resource. For now, we only use it to grant
+First, the `aws-auth` resource. For now, we only use it to grant
 `github-ci` user access to the cluster, but later, you can add
 more users to this file if you want.
 
@@ -101,8 +103,8 @@ run `kubectl apply -f eks/aws-auth.yaml` to deploy it.
         kubectl apply -f eks/aws-auth.yaml
 ```
 
-The second thing we must deploy is the deployment resource. This 
-resource will manage the deployment of our simple-bank API 
+The second thing we must deploy is the `deployment` resource. This 
+resource will manage the deployment of our `simple-bank` API 
 container. Here you can see that it will download this specific 
 image tag from ECR.
 
@@ -136,7 +138,7 @@ change it a bit so that the new image will also be tagged as
 `latest`, and then use the `all-tags` option to push all of the
 tags to Amazon ECR. To do that, in the `docker build` command 
 let's add `-t latest` and in the `docker push` command, let's
-add `-a` option. We should also remove the image tag at the 
+add `-a` option. We should also remove the $IMAGE_TAG at the 
 end of the image name.
 
 ```yaml
@@ -157,8 +159,8 @@ OK, now we can use the `kubectl` command to apply the
 ```
 
 Next, we do the same thing to deploy `service.yaml` to the cluster.
-Then the issuer to manage the TLS certificates. And finally, the
-ingress to route external traffic to the internal `simple-bank`
+Then the `issuer.yaml` to manage the TLS certificates. And finally, the
+`ingress.yaml` to route external traffic to the internal `simple-bank`
 API service.
 
 ```yaml
@@ -175,7 +177,7 @@ Alright, I think that should be it!
 All of our resources have been added to the step in the 
 `deploy` workflow.
 
-Let's open the terminal and push these changes to Github. 
+Let's open the terminal and push these changes to GitHub. 
 First I'm gonna create a new branch called `ft/ci-deploy`.
 
 ```shell
@@ -194,7 +196,7 @@ Commit it with this message: "update github-ci to deploy to amazon EKS"
 git commit -m "update github-ci to deploy to amazon EKS"
 ```
 
-And finally, push the new branch to Github.
+And finally, push the new branch to GitHub.
 
 ```shell
 git push origin ft/ci-deploy
@@ -206,15 +208,15 @@ to create a pull request to merge it to `master`.
 OK, the PR has been created. Let's review it a bit!
 
 We've changed the job's name to `deploy`, added a step to install
-`kubectl`. Rebuild the docker image with the latest tag, push
+`kubectl`. Rebuild the Docker image with the latest tag, push
 the image with all of its tags to Amazon ECR. And finally, use
 `kubectl` command to deploy the image to production Kubernetes
 cluster on Amazon EKS.
 
-There are also some small changes I made in the README file,
+There are also some small changes I made in the `README` file,
 but we don't need to care about them.
 
-However, we should pay attention to the deployment, as we're
+However, we should pay attention to the `deployment.yaml`, as we're
 specifying here, it will pull the image with the `latest` tag
 from ECR.
 
@@ -259,7 +261,7 @@ Commit it with this message: "add image pull policy always"
 git commit -m "add image pull policy always"
 ```
 
-and push it to Github.
+and push it to GitHub.
 
 ```shell
 git push origin ft/ci-deploy
@@ -361,7 +363,7 @@ commit hash here.
 
 ![](../images/part36/12.png)
 
-But the latest tag doesn't look good. Its image name is also 
+But the `latest` tag doesn't look good. Its image name is also 
 "latest" instead of the link to ECR as the one above. So we've
 found the issue. Let's go back to the `deploy` workflow.
 
@@ -383,7 +385,7 @@ by adding the correct image name to its prefix just like that
 
 and I think we're good to go.
 
-Now let's save the file, and push it to Github. I'm gonna
+Now let's save the file, and push it to GitHub. I'm gonna
 add the change we've just made,
 
 ```shell
@@ -412,7 +414,7 @@ Oh, looks like the PR cannot be merged automatically.
 
 The reason is that we've previously used `Squash and merge`, so the
 commit history on our local machine is different from the one on
-Github's master branch.
+GitHub's `master` branch.
 
 To fix this, we have to rebase our branch with the latest version of
 `master` branch.
@@ -424,7 +426,7 @@ git pull
 ```
 
 to fetch and merge all the new changes from the remote `master` 
-branch on Github to our local `master` branch.
+branch on GitHub to our local `master` branch.
 
 Then check out the `ft/ci-deploy` branch, and run
 
@@ -437,12 +439,12 @@ history is different. So let's fix it!
 
 The conflict is in the `deployment.yaml` file.
 
-Here we can see the current change and the incoming change.
+Here we can see the Current Change and the Incoming Change.
 
 ![](../images/part36/14.png)
 
 In this case, it's pretty simple, since we only add a new image
-pull policy. So let's just accept the current change.
+pull policy. So let's just accept the Current Change.
 
 OK, now go back to the terminal and check the status
 
@@ -461,7 +463,7 @@ git rebase --continue
 
 to complete the rebase process.
 
-Alright, now let's push the change to Github.
+Alright, now let's push the change to GitHub.
 
 ```shell
 git push origin ft/ci-deploy
@@ -473,20 +475,20 @@ commit history has been rewritten when we rebase with the
 
 ![](../images/part36/16.png)
 
-So local commit history will be different from the one on Github.
-We have to use `-f` option to force Github to replace the change
+So local commit history will be different from the one on GitHub.
+We have to use `-f` option to force GitHub to replace the change
 history.
 
 ```shell
 git push -f origin ft/ci-deploy
 ```
 
-And voila, the change has been pushed successfully. It's kind 
+And voilà, the change has been pushed successfully. It's kind 
 of painful, but sometimes we might need to do it. We can avoid
 this situation by always pulling the latest changes from the 
 remote `master` branch first, before creating a new branch.
 
-OK, now the changes look good on Github, we can go ahead and
+OK, now the changes look good on GitHub, we can go ahead and
 create the pull request.
 
 Let's review it! Here we have corrected the way we tag the `latest`
@@ -518,10 +520,12 @@ Once the new image is pushed, it will show up here.
 OK, back to the workflow. The image is being pushed to
 ECR.
 
+Now the `Update kube config` step is done, then the image is 
+being deployed to Amazon EKS.
+
 ![](../images/part36/21.png)
 
-Now the `Update kube config` step is done, then the image is 
-being deployed to Amazon EKS. And a bit later, everything is done.
+And a bit later, everything is done.
 
 The workflow is completed successfully this time.
 

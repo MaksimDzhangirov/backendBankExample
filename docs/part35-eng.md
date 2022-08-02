@@ -24,6 +24,8 @@ only it is expensive, but it is also time-consuming. And as it's
 done manually, sometimes we might forget to renew the certificate
 when it expires.
 
+## Creating TLS certificates
+
 So is it possible for the system to automatically create or renew 
 TLS certificates? The answer is yes. In Kubernetes, we can use an 
 add-on called [cert-manager](https://cert-manager.io/) to do so.
@@ -70,7 +72,7 @@ file on a specified path on the domain's website, and it
 will sign the provided nonce with its private key. Once it
 has completed these steps, it notifies the CA that it's 
 ready to complete validation. Then it's the CA's job to check that
-the challenges have been satisfied. It will verify the sinature
+the challenges have been satisfied. It will verify the signature
 of the nonce, and will attempt to download the file from the 
 specified path on the web server, and make sure that the file
 has the expected content. 
@@ -82,7 +84,7 @@ content are valid. This will allow the agent to be authorized to
 use its key pair to issue or revoke TLS certificates of the 
 target domain.
 
-If you have watched my video about TLS then you've already know
+If you have watched my video about TLS then you've already known
 how the TLS certificates are issued. Basically, the agent (or 
 cert-manager) creates a certificate signing request (or CSR)
 to ask the CA to issue a certificate for the domain name with
@@ -97,7 +99,7 @@ certificate revocation process works on a similar manner.
 
 OK, so now you understand how Let's Encrypt works.
 
-the most important thing in the whole process is the
+The most important thing in the whole process is the
 validation phase, where the agent needs to solve a set 
 of [challenges](https://letsencrypt.org/docs/challenge-types/).
 
@@ -113,7 +115,7 @@ wildcard certificates. So if you want to have wildcard certificates,
 you have to use another type of challenge, which is DNS-01 challenge.
 This challenge asks you to prove that you control the DNS for your
 domain name by putting a specific value in a TXT record under that 
-domain name. To do that, in AWS Route 53's `Hosted zones` page, we 
+domain name. To do that, in AWS Route53's `Hosted zones` page, we 
 can create a new record, and select TXT from the record type list.
 
 ![](../images/part35/4.png)
@@ -128,7 +130,7 @@ certificates.
 
 However, since automation of certificate issuance and renewals is 
 really important, we should only use DNS-01 challenge if DNS provider
-has na API to automate the record updates. For this video, I'm just
+has an API to automate the record updates. For this video, I'm just
 gonna show you how to use HTTP-01 challenge, since it's much simpler,
 and we don't need a wildcard certificate for our simple bank service.
 
@@ -157,7 +159,7 @@ switch the namespace to `cert-manager`.
 
 Here you can see 3 running pods: `cert-manager`, `cainjector` and 
 `webhook`. So I think the add-ons has been installed correctly. Next
-step, we will learn how to config and deploy a certificate Issuer to
+step, we will learn how to config and deploy a Certificate Issuer to
 the cluster. Next step, we will learn how to config and deploy a 
 certificate Issuer to the cluster. In [this page](https://cert-manager.io/docs/configuration/),
 let's select [ACME](https://cert-manager.io/docs/configuration/acme/) 
@@ -189,7 +191,7 @@ spec:
 
 In the `eks` folder, I'm gonna create a new file: `issuer.yaml` and 
 paste in the copied content. It starts with the api version: 
-`cert-manager.io/v1`. Here the resource kind is `ClusterIssuer`.
+`cert-manager.io/v1`. Here the resource kind is `ClusterIssuer`
 
 ```yaml
 apiVersion: cert-manager.io/v1
@@ -198,12 +200,12 @@ kind: ClusterIssuer
 
 which means it will work for all namespaces in the cluster. If you set 
 to just `Issuer`, then it will only work for 1 namespace. Next, we 
-must set a name for the resource in the metadata section. Here it is 
+must set a name for the resource in the `metadata` section. Here it is 
 `letsencrypt-staging`, because the example is for testing only, that's
 why the server URL is pointing to `acme-staging` API here. The staging
 API will only return fake certificates. But in our case, we want to 
 deploy this to production and issue real certificates. So I'm gonna set
-its name to `letsencrypt` only. And let's also remove staging from the
+its name to `letsencrypt` only. And let's also remove `staging` from the
 server URL.
 
 ```yaml
@@ -211,8 +213,15 @@ metadata:
   name: letsencrypt
 ```
 
-Alright, next I'm gonna remove these comments, and replace this example
-email with tech school's email.
+Alright, next I'm gonna remove these comments,
+
+```yaml
+# You must replace this email address with your own.
+# Let's Encrypt will use this to contact you about expiring
+# certificates, and issues related to your account.
+```
+
+and replace this example email `user@example.com` with tech school's email.
 
 ```yaml
 spec:
@@ -246,7 +255,7 @@ clusterissuer.cert-manager.io/letsencrypt created
 ```
 
 OK, the cluster issuer has been created. Let's check it in the `k9s` 
-console. I'm gonna search for cluster issuer.
+console. I'm gonna search for `clusterissuer`.
 
 ![](../images/part35/7.png)
 
@@ -257,7 +266,7 @@ We can check more details by describing it.
 ![](../images/part35/8.png)
 
 The registered email matches with the one we specified in the 
-`yaml` file. We can also find its private key in the secrets list.
+`yaml` file. We can also find its private key in the `Secrets` list.
 
 ![](../images/part35/9.png)
 
@@ -356,7 +365,7 @@ list, we also see an event `CreateCertificate` from `cert-manager`.
 And the message says: "Successfully create Certificate 
 simple-bank-api-cert". So I think it's working properly.
 
-Just to make sure, let's search for certificate.
+Just to make sure, let's search for `certificate`.
 
 ![](../images/part35/20.png)
 
@@ -366,8 +375,9 @@ scroll all the way down to the bottom,
 
 ![](../images/part35/21.png)
 
-we can see its creation time, its expiration time, and the time at 
-which it will be automatically renewed.
+we can see its creation time (`Not Before`), its expiration time (`Not 
+After`), and the time at which it will be automatically renewed (`Renewal
+Time`).
 
 From what I see here, looks like the certificate is valid for about
 3 month, and it will be renewed 1 month before expiration. That's
@@ -392,7 +402,7 @@ it.
 
 ![](../images/part35/24.png)
 
-Voila, the request is successful. Now let's change it back to HTTP,
+Voilà, the request is successful. Now let's change it back to HTTP,
 and resend the request!
 
 ![](../images/part35/25.png)
