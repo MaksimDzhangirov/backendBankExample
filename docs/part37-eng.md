@@ -8,7 +8,7 @@ Welcome back to the Backend Master Class. It might be a surprise
 to you because, in the [previous video](part36-eng.md), I said
 it was the end of the course.
 
-My plan wsa to start a new course with more advanced backend
+My plan was to start a new course with more advanced backend
 topics. However, after giving it some thought, I think it's more
 suitable to continue posting them in this course, since the 
 main purpose of the course is to help you become a master in 
@@ -69,8 +69,8 @@ the login request in Postman.
 ![](../images/part37/4.png)
 
 As you can see, right now, the server only returns a PASETO 
-access token. And if we look at the `app.env` file in the 
-code,
+access token. And if we look at the `app.env` file in the
+Visual Studio Code,
 
 ```
 DB_DRIVER=postgres
@@ -80,7 +80,7 @@ TOKEN_SYMMETRIC_KEY=12345678901234567890123456789012
 ACCESS_TOKEN_DURATION=15m
 ```
 
-We can see that the duration of the access token is very short, 
+we can see that the duration of the access token is very short, 
 only 15 minutes. What we want to have is a refresh token in the 
 login API response, with a longer duration. So, here I'm gonna
 add a new variable called `REFRESH_TOKEN_DURATION` and let's 
@@ -97,11 +97,6 @@ The new field is gonna be `RefreshTokenDuration` of type
 `time.Duration` and we must add a `mapstructure` tag for it with
 the same name as the environment variable.
 
-OK, done!
-
-Next step, we will need to create a new sessions table in the
-database.
-
 ```go
 type Config struct {
 	DBDriver             string        `mapstructure:"DB_DRIVER"`
@@ -112,6 +107,11 @@ type Config struct {
 	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
 }
 ```
+
+OK, done!
+
+Next step, we will need to create a new `sessions` table in the
+database.
 
 So let's use this command in the README file to create a new DB
 migration.
@@ -167,8 +167,8 @@ CREATE TABLE "sessions" (
 ALTER TABLE "sessions" ADD FOREIGN KEY ("username") REFERENCES "users" ("username");
 ```
 
-For the migration `down`, similar as in the add users migration
-down script, all we have to do is to drop the `sessions` table.
+For the migration `down`, similar as in the `add_users.down` migration
+script, all we have to do is to drop the `sessions` table.
 
 ```postgresql
 DROP TABLE IF EXISTS "sessions";
@@ -195,14 +195,14 @@ retrieve a session.
 
 I'm gonna create a new file `session.sql` inside the `query`
 folder. Then let's copy the content of the `user.sql` file
-here. The first query is to create a new session so, insert
-into sessions, the columns are id, username, and you know 
+here. The first query is to create a new session so, `INSERT
+INTO sessions`, the columns are `id`, `username`, and you know 
 what, it's faster to just copy the rest of the columns from
 the migration `up` file. Then reformat all columns to the
 valid syntax.
 
 In Visual Studio Code, we can easily create multiple cursors
-by pressing the option (or Alt) key while clicking at 
+by pressing the Option (or Alt) key while clicking at 
 different positions in the code editor. This allows us to edit
 multiple lines at the same time, which is much faster than 
 doing it one by one.
@@ -238,7 +238,7 @@ SELECT * FROM users
 WHERE username = $1 LIMIT 1;
 ```
 
-to where `id` equals the first parameter.
+to `WHERE id` equals the first parameter.
 
 ```postgresql
 --name: GetSession :one
@@ -342,7 +342,7 @@ type CreateSessionParams struct {
 }
 ```
 
-and paste them inside this params object.
+and paste them inside this `CreateSessionParams` object.
 
 ```go
 	server.store.CreateSession(ctx, db.CreateSessionParams{
@@ -362,6 +362,14 @@ the problem is, the `createToken` function doesn't return the
 token payload. It just returns an encrypted token string, so we
 don't know what the token's ID is. Therefore, I'm gonna add the
 token payload to the list of returning values of this function.
+
+```go
+type Maker interface {
+    CreateToken(username string, duration time.Duration) (string, *Payload, error)
+	...
+}
+```
+
 Now as we've changed the `TokenMaker` interface, we must change
 the `PasetoMaker` and `JwtMaker` as well, because they're 
 implementing the `TokenMaker` interface. First, for `PasetoMaker`,
@@ -374,6 +382,11 @@ func (maker *PasetoMaker) CreateToken(username string, duration time.Duration) (
 ```
 
 Then change this `return` statement to include `payload` as well. 
+
+```go
+    return "", payload, err
+```
+
 Now, for this `Encrypt` function call, we must store its output
 value in 2 variables: token and error. Then we return all 3 values:
 token, payload, and error at the end of the function.
@@ -411,6 +424,8 @@ func (maker *JWTMaker) CreateToken(username string, duration time.Duration) (str
 ```
 
 OK, now the `JwtMaker` is fixed.
+
+## Fix unit tests
 
 But some of the unit tests are still showing errors, so let's fix
 them as well. In the `TestPasetoMaker` function, we must add a 
@@ -483,7 +498,7 @@ func TestExpiredJWTToken(t *testing.T) {
 
 OK, it's done!
 
-Let's rerun the whole token package tests. They're all passed!
+Let's rerun the whole `token` package tests. They're all passed!
 Excellent!
 
 I'm gonna close all of these files.
@@ -499,7 +514,8 @@ the `payload` object and require it to be not empty.
     require.NoError(t, err)
     require.NotEmpty(t, payload)
 ```
-OK cool. The errors are gone.
+
+OK, cool. The errors are gone.
 
 Now let's go back to the `loginUser` handler function!
 
@@ -522,7 +538,7 @@ that's because of this incompleted piece of codes.
 So first, I'm gonna comment out all these fields of the 
 `CreateSessionParams` object.
 
-OK cool, now the errors have shown up. Let's fix them!
+OK, cool, now the errors have shown up. Let's fix them!
 
 Here, when creating the access token, we need to add 1 more 
 variable to store the access token payload.
@@ -556,7 +572,7 @@ type loginUserResponse struct {
 
 Alright, now back to the `loginUser` handler.
 
-Let's add the refresh payload variable to this `CreateToken` call.
+Let's add the `refreshPayload` variable to this `CreateToken` call.
 
 ```go
 	refreshToken, refreshPayload, err := server.tokenMaker.CreateToken(
@@ -731,12 +747,12 @@ let's go back to the code to fill in their correct values.
 
 It's actually pretty simple because we're using Gin framework. For the
 `UserAgent`, we can just call `ctx.Request.UserAgent()`. This information
-is already available inside the Gin context object. And similarly, for the
+is already available inside the Gin `context` object. And similarly, for the
 client IP, we can just call `ctx.ClientIP()`. And that's it! Super easy,
 isn't it?
 
-You can also get other metadata from the context, such as the content 
-type, if you want. OK, now let's restart the server and test it out! 
+You can also get other metadata from the context, such as the `Content-Type`,
+if you want. OK, now let's restart the server and test it out!
 
 ![](../images/part37/12.png)
 
@@ -781,7 +797,7 @@ Similarly, for the `renewAccessTokenResponse`, we will just return
 of all other redundant fields.
 
 OK, then in the `renewAccessToken` function, first we bind the 
-input json into the request object. Then, here, we need to verify
+input JSON into the request object. Then, here, we need to verify
 if the refresh token is valid or not. So I'm gonna call 
 `server.tokenMaker.VerifyToken`, and pass in `req.RefreshToken`.
 The output of this function call is a `refreshPayload` and an
@@ -805,7 +821,7 @@ func (server *Server) renewAccessToken(ctx *gin.Context) {
 ```
 
 If error is not `nil`, then it means the refresh token is invalid
-or expired. In that case, we simply return an unauthorized status
+or expired. In that case, we simply return an `Unauthorized` status
 code to the client. Otherwise, we will find the session in the 
 database by calling `server.store.GetSession` and pass in the
 refresh token's ID as session ID.
@@ -826,7 +842,7 @@ func (server *Server) renewAccessToken(ctx *gin.Context) {
 }
 ```
 
-It will return a session object, or an error. If error is not `nil`,
+It will return a `session` object, or an error. If error is not `nil`,
 then we just handle it just like when user is not found in the login
 API. Return 404 `Not found` if session doesn't exist, or internal 
 server error in other cases.
@@ -965,10 +981,12 @@ Let's open the terminal and restart the server!
 make server
 ```
 
+## Sending requests using Postman
+
 Then open Postman, I'm gonna create a new request. Change the method
 to POST, then the request URL should be 
 `localhost:8080/tokens/renew_access`. Then in the `Body` tab, let's 
-select Raw, and JSON format. The only field we would need is 
+select `Raw`, and JSON format. The only field we would need is 
 `refresh_token`. I'm gonna copy its value from the login API's
 response. Alright, now let's send the request!
 
@@ -979,7 +997,7 @@ Yee! It's successful!
 We've got a new access token that will last for the next 15 minutes!
 Awesome!
 
-OK, now I'm gonna save this new request into my Simple Bank Postman
+OK, now I'm gonna save this new request into my `Simple Bank` Postman
 collection.
 
 ![](../images/part37/15.png)
