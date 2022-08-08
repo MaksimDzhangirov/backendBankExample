@@ -5,7 +5,7 @@
 Hello guys, welcome to the backend master class!
 
 If you still remember, in the first lecture of the course, we've
-learned about DB diagram, a free service built by Holistics that
+learned about dbdiagram.io, a free service built by Holistics that
 helps us design the database using DBML, or database markup 
 language, visualize the entity-relationship diagrams of the table,
 and then automatically generate and export SQL codes of the 
@@ -13,6 +13,8 @@ schema.
 
 Recently, I just found out that Holistic has built another super 
 cool service called [dbdocs](https://dbdocs.io/).
+
+## Creating db documentation using dbdocs
 
 This service helps us create a beautiful web-based database 
 documentation using the same DBML file that we wrote before.
@@ -26,7 +28,7 @@ from the terminal using `dbdocs` and DBML's CLI tool.
 
 First, let's open [dbdocs.io](https://dbdocs.io/) website and
 access the `Get Started` [page](https://dbdocs.io/docs). In order
-to install `dbdocs` tool, we need to have NodeJS and npm on our 
+to install `dbdocs` tool, we need to have `NodeJS` and `npm` on our 
 machine.
 
 As I'm on a Mac, I will install them with `Homebrew`.
@@ -109,11 +111,11 @@ do it!
 dbdocs login
 Choose a login method:
   1) Email
-  2) Github
+  2) GitHub
   Answer:
 ```
 
-We can choose to login with either an email or a Github account. I'm
+We can choose to login with either an email or a GitHub account. I'm
 gonna choose email.
 
 Then enter the email address: `techschool.guru@gmail.com`.
@@ -126,7 +128,7 @@ Let's copy this OTP, and paste it to the terminal.
 
 ![](../images/part38/3.png)
 
-Then voila, we've successfully logged in to the account. Now we can
+Then voilà, we've successfully logged in to the account. Now we can
 generate the DB documentation page using the `dbdocs build` command.
 
 It only needs 1 argument, which is the location of the DBML file:
@@ -161,7 +163,7 @@ the correct name: `simple_bank`, exactly as we wanted it to be.
 
 ![](../images/part38/5.png)
 
-We can access it via this [link](https://dbdocs.io/techschool.guru/simple_bank)
+We can access it via this [link](https://dbdocs.io/techschool.guru/simple_bank).
 
 As you can see, there's no password protection yet at the moment.
 
@@ -215,7 +217,7 @@ dbdocs password --set secret --project simple_bank
 Password is set for 'simple_bank'
 ```
 
-Then voila, the password has been set for our project. Now, if we
+Then voilà, the password has been set for our project. Now, if we
 visit [this page](https://dbdocs.io/techschool.guru/simple_bank) again,
 it will say "protected project", and we have to enter the correct 
 password to enter the page.
@@ -225,14 +227,14 @@ password to enter the page.
 Very cool and so easy to set up, right?
 
 On the page, there's also a button to allow us to login with email
-or Github.
+or GitHub.
 
 ![](../images/part38/12.png)
 
 ![](../images/part38/13.png)
 
 It's the same as what we've done before in the terminal. Just enter
-email hre, click `Send`. Then open Gmail to get the OTP. Copy the 
+email here, click `Send`. Then open Gmail to get the OTP. Copy the 
 OTP from this email, and paste it into this box.
 
 Now we've successfully logged in.
@@ -291,7 +293,7 @@ in the terminal.
 
 ![](../images/part38/19.png)
 
-OK, the dbml command line tool is successfully installed.
+OK, the `dbml` command line tool is successfully installed.
 
 Here's how we can use it to generate SQL codes: just run `dbml2sql`,
 then the database engine, which is Postgres in our case. Then `-o`, 
@@ -313,6 +315,8 @@ in Visual Studio Code.
 
 Here it is, the `schema.sql` file under the `doc` folder. So it
 worked perfectly!
+
+## Updating Makefile
 
 Before we finish, I'm gonna update the Makefile to include 2 new 
 commands. The first one is `db_docs`, which will be used to build the
@@ -408,7 +412,7 @@ of the project.
 This file contains the error logs that will tell you if there's 
 any problem with your DBML script or not. In our case, we don't 
 have any errors, so the content of the file is empty. But in any
-case, we never want to commit this log file to Github, right?
+case, we never want to commit this log file to GitHub, right?
 
 So let's create a `.gitignore` file at the root, and put `*.log`
 inside the file to ignore all log files.
@@ -437,7 +441,7 @@ and commit it with a message saying "add dbdocs".
 git commit -m "add dbdocs"
 ```
 
-Finally, we can push it to Github.
+Finally, we can push it to GitHub
 
 ```shell
 git push origin ft/dbdocs
