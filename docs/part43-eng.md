@@ -16,20 +16,22 @@ is to be able to write codes just once, but can serve both
 gRPC and HTTP requests at the same time.
 
 And that's exactly what we've gonna learn today with gRPC
-gateway. I already told you about ot in lecture 39: 
+gateway. I already told you about it in lecture 39: 
 Introduction to gRPC. But here's a recap for those who 
 haven't watched it yet.
 
+## gRPC gateway
+
 gRPC gateway is a plugin for Protocol Buffer that generates
 HTTP proxy codes from `protobuf` definition. From the 
-same proto file, `protoc` will generate both the gRPC and
+same `proto` file, `protoc` will generate both the gRPC and
 the HTTP gateway codes. A gRPC client will connect directly
 to the gRPC server to send gRPC requests and receives binary
 responses. While an HTTP client will connect to the HTTP 
 gateway server to send HTTP JSON requests. This request
 will be translated into gRPC format before forwarded to the
 gRPC service handler to be processed. Its response will also
-be translted back into JSON format before returning to the 
+be translated back into JSON format before returning to the 
 client.
 
 ![](../images/part43/1.png)
@@ -60,9 +62,11 @@ case.
 
 Alright, let's learn how to do it!
 
+## Install the build tools for gRPC gateway
+
 The first thing we need to do is to install the build 
-tools for gRPC gateway. ou can easily find the 
-installation instructions on the [Github page](https://github.com/grpc-ecosystem/grpc-gateway#installation)
+tools for gRPC gateway. You can easily find the 
+installation instructions on the [GitHub page](https://github.com/grpc-ecosystem/grpc-gateway#installation)
 of gRPC gateway. We should copy this chunk of code
 
 ```go
@@ -87,7 +91,7 @@ is pretty simple, it's just a list of blank imports of the
 
 The reason we're doing this us because we're not using 
 them directly in the code, but we just want to install 
-them to our local machine, so that protoc can use them
+them to our local machine, so that `protoc` can use them
 to generate codes for us. By running
 
 ```shell
@@ -131,6 +135,8 @@ folder.
 Those binaries will be used by `protoc` to generate 
 Golang codes later.
 
+## Generate gRPC gateway code
+
 Alright, now the tools are installed, let's see how we can
 use them! Actually, the first 3 steps in [this guide](https://github.com/grpc-ecosystem/grpc-gateway#usage) 
 are just to define a normal gRPC API, generate gRPC stubs, 
@@ -150,7 +156,7 @@ gateway code. At this point, there are 3 options:
    We only use this option when the source `proto` file isn't
    under our control.
    
-So in our case, since we oen the `proto` file, we will go with the
+So in our case, since we own the `proto` file, we will go with the
 second option! Therefore, I will scroll down to the second section:
 "With custom annotations".
 
@@ -184,8 +190,8 @@ and the body.
 
 One thing you must keep in mind here is that you have to 
 provide the required third party `proto` file to the 
-`protobuf` compiler. If you're using buf to manage your
-proto files & generate stubs, you can follow this instruction
+`protobuf` compiler. If you're using `buf` to manage your
+`proto` files & generate stubs, you can follow this instruction
 
 ```
 version: v1
@@ -200,7 +206,7 @@ I also recommend you to take a look at [this](https://github.com/grpc-ecosystem/
 "a bit of everything" `proto` file, where you can find a lot
 more examples of how you can customize your gRPC gateway.
 
-OK, now,as you know, in our project, we're not using `buf`, but
+OK, now, as you know, in our project, we're not using `buf`, but
 we're using `protoc` to generate stubs, so we will need to copy
 the relevant `proto` files manually from the [googleapis repository](https://github.com/googleapis/googleapis)
 to our project.
@@ -217,8 +223,8 @@ google/api/httpbody.proto
 ```
 
 They're all inside the `google/api` folder, so let's go to 
-the `googleapi` repo, click this `Code` button, and copy
-the link.
+the `googleapi` [repo](https://github.com/googleapis/googleapis), click 
+this `Code` button, and copy the link.
 
 ![](../images/part43/4.png)
 
@@ -329,10 +335,10 @@ the gateway. Here's how to do it. We have to add the
 `grpc-gateway-out` option to specify the location of the
 gRPC gateway output files. In our case, we're gonna use
 the same `pb` folder, where we also store the output of 
-the generated gRPC stubs. There's an option to write logs
-to standard error, but it's not very important, so we can
-ignore it. The more important option is the source relative
-paths, which will tell `protoc` to store the generated files
+the generated gRPC stubs. There's an option (`logtostderr=true`) to 
+write logs to standard error, but it's not very important, so we can
+ignore it. The more important option is `paths=source_relative`, which 
+will tell `protoc` to store the generated files
 in the folder that's relative to the root of our project.
 
 ```makefile
@@ -367,6 +373,8 @@ generated gateway code is located. There's a bunch of codes
 in this file, but the most important thing that we're gonna
 use is the `RegisterSimpleBankHandlerServer()` function.
 
+## Run the HTTP gateway server using generated code
+
 OK, now let's learn how to run the HTTP gateway server with
 this generated code.
 
@@ -381,8 +389,16 @@ func runGatewayServer(config util.Config, store db.Store) {
 }
 ```
 
-So after we've created the server object, we can get rid of
-this code that registers gRPC server.
+So after we've created the server object,
+
+```go
+server, err := gapi.NewServer(config, store)
+if err != nil {
+    log.Fatal("cannot create server:", err)
+}
+```
+
+we can get rid of this code that registers gRPC server.
 
 ```go
 grpcServer := grpc.NewServer()
@@ -426,7 +442,7 @@ For those who don't know, canceling a context is a way to
 prevent the system from doing unnecessary work.
 
 Now, back to the register function, it will return an 
-erro, if the error is not `nil`, we simply write a fatal
+error, if the error is not `nil`, we simply write a fatal
 log saying "cannot register handler server".
 
 ```go
@@ -477,7 +493,7 @@ if err != nil {
 }
 ```
 
-Now let's go back to the main function to call it!
+Now let's go back to the `main` function to call it!
 What we want is to be able to serve both gRPC and
 HTTP requests at the same time. But, we can't just
 call both functions in the same go routine, since
@@ -485,7 +501,7 @@ the first server will block the second one. So here
 if we run the gRPC server on the `main` go routine, 
 then we have to run the HTTP gateway server on 
 another one. It's actually super easy to do! We
-simply use the go keyword, followed by the call to 
+simply use the `go` keyword, followed by the call to 
 the `runGatewayServer()` function.
 
 ```go
@@ -590,16 +606,18 @@ requests on different ports.
 
 OK, now why we don't try to send some HTTP requests?
 
-In Postman, let's try to call this Create User API!
+## Sending requests to gRPC and HTTP servers
 
-Oops, we've got 400 Not found error.
+In Postman, let's try to call this `CreateUser` API!
+
+Oops, we've got `400 Not found` error.
 
 ![](../images/part43/5.png)
 
 Why? Well, that's because the path we're using is not 
 correct.
 
-Do you rememnber the path that we put in the 
+Do you remember the path that we put in the 
 `service_simple_bank.proto` file? It should be 
 `/v1/create_user`. So I'm gonna copy it to Postman
 and resend the request.
@@ -608,12 +626,12 @@ and resend the request.
 
 This time, the request is successful. A new user has been created.
 
-Similarly, I will copy the path of the login user API, paste it to
-this Postman request, and click Send!
+Similarly, I will copy the path of the `LoginUser` API, paste it to
+this Postman request, and click `Send`!
 
 ![](../images/part43/7.png)
 
-Voila, the request is also successful. We've got the user info 
+Voilà, the request is also successful. We've got the user info 
 together with all the access and refresh tokens. So, our HTTP
 gateway server is working very well.
 
@@ -622,7 +640,7 @@ How about the gRPC server?
 I'm gonna use Evans to send a gRPC request to make sure that 
 it's still working.
 
-Let's call LoginUser RPC. Enter the username and password.
+Let's call `LoginUser` RPC. Enter the username and password.
 
 ```shell
 call LoginUser
@@ -655,16 +673,16 @@ is not an issue.
 
 But what if you want them to be snake cases instead? For me, 
 I would prefer to keep the same field names as we defined in 
-the proto files. that way, we have a consistent format between
+the `proto` files. That way, we have a consistent format between
 gRPC and HTTP. So how can we achieve this?
 
 Well, if you go to the gRPC gateway [documentation page](https://grpc-ecosystem.github.io/grpc-gateway/),
-open the mapping menu and select customizing your gateway, 
-you will find a section about how to use [proto names in 
+open the `Mapping` menu and select `Customizing your gateway`, 
+you will find a section about how to use [`proto` names in 
 JSON](https://grpc-ecosystem.github.io/grpc-gateway/docs/mapping/customizing_your_gateway/#using-proto-names-in-json).
 
 So by default, `protoc` generates camel case JSON fields. In
-order to use the exact case used in the proto file, we have
+order to use the exact case used in the `proto` file, we have
 to set the `UseProtoNames` option to `true`. And we do that
 by passing in a `MarshalerOption` when creating the gRPC
 serve mux.

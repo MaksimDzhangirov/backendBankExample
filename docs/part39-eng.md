@@ -23,7 +23,7 @@ on the server.
 
 ![](../images/part39/1.png)
 
-As you can see in this example, there's a hello function on the 
+As you can see in this example, there's a `hello` function on the 
 server, which is written in Rust and the client, written in Go, can 
 call that function as if it's in the same local codebase.
 
@@ -71,11 +71,31 @@ service WelcomeService {
 
 2) With the help of Protocol Buffer Compiler you can easily generate
    codes in any programming language of your choice. Here's an example
-   of the generated Golang code. It has a struct for HelloRequest, a 
-   struct for HelloResponse, and 2 interfaces for the client and server,
+   of the generated Golang code. It has a struct for `HelloRequest`, a 
+   struct for `HelloResponse`, and 2 interfaces for the client and server,
    which we can base on to write the real implementation later. On the
    left is another example of the generated codes in Rust.
-   
+
+```go
+...
+type HelloRequest struct {
+	Name string
+}
+
+type HelloResponse struct {
+	Greet string
+}
+
+type WelcomeServiceClient interface {
+	Hello(*HelloRequest) (*HelloResponse, error)
+}
+
+type WelcomeServiceServer interface {
+	Hello(*HelloRequest) (*HelloReponse, error)
+}
+...
+```
+
 ```rust
 ...
 
@@ -136,7 +156,6 @@ service.
 
 There are 4 types of gRPC.
 
-
 The simplest one is unary gRPC, where the client sends 1 single 
 request, and the server replies with 1 single response. This is 
 similar to the normal HTTP API. Then we have client-streaming 
@@ -194,7 +213,7 @@ In upcoming videos, I'm gonna gradually show you how to set up gRPC
 development environment, how to define a set of APIs and data 
 structures using `protobuf` and generate gRPC stubs from it, how to
 implement the gRPC service handlers, and finally how to generate and
-set up a gRPC gateway as well as its swagger documentation page for
+set up a gRPC gateway as well as its Swagger documentation page for
 HTTP clients.
 
 ![](../images/part39/6.png)

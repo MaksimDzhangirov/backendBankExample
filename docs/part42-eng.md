@@ -20,10 +20,12 @@ command call: rpc error: code = Unimplemented desc = method CreateUser not imple
 
 So today, let's learn how to implement them!
 
-If we open the implemented simple bank server, it will bring 
+## Implementing API to create users
+
+If we open the `UnimplementedSimpleBankServer`, it will bring 
 us to the generated gRPC service code, where we can find the 
 `SimpleBankServer` interface that we need to implement. And
-here, the unimplemented server has already given us the 
+here, the `UnimplementedSimpleBankServer` has already given us the 
 basic implementation of the 2 methods that are required by 
 the interface: `CreateUser` and `LoginUser`. What we have to
 do now, is implement them on our own `Server` struct.
@@ -184,7 +186,7 @@ if err != nil {
 How can we do that in gRPC?
 
 Well, if you look at the `return` statement that `protoc` generated
-for us, It's pretty simple.
+for us, it's pretty simple.
 
 ```go
 return nil, status.Errorf(codes.Unimplemented, "method CreateUser not implemented")
@@ -391,13 +393,15 @@ password (TYPE_STRING) => secret
 }
 ```
 
-And voila, a new user has been created, we've got the
+And voilà, a new user has been created, we've got the
 response from the server, with the information of the 
 created user.
 
 Pretty cool, isn't it?
 
-So that's how we implement the Create User API in gRPC.
+So that's how we implement the `CreateUser` API in gRPC.
+
+## Implementing Login User API
 
 How about the Login User API?
 
@@ -581,7 +585,7 @@ if err != nil {
 When everything is successful, we will create a 
 `pb.LoginUserResponse` object, and return it together with a
 `nil` error. Now, the first field of this response object
-is a User, so we just use the `convertUser()` function to convert
+is a `User`, so we just use the `convertUser()` function to convert
 the `db.User` to `pb.User`. The session ID is gonna be 
 `session.ID.String()`, the `AccessToken` should be `accessToken`,
 and the same for the refresh token. Now the `AccessTokenExpiresAt`
@@ -601,9 +605,9 @@ rsp := &pb.LoginUserResponse{
 return rsp, nil
 ```
 
-We're dono with the implementation of the `LoginUser` RPC.
+We're done with the implementation of the `LoginUser` RPC.
 Let's open the terminal and restart the gRPC server. Reconnect
-to it with Evans client. This time, we will call the LoginUser
+to it with Evans client. This time, we will call the `LoginUser`
 RPC. Enter the username and password we created before.
 
 ```shell
@@ -626,7 +630,7 @@ password (TYPE_STRING) => secret
 }
 ```
 
-Then voila, we've got a successful response, with all the user
+Then voilà, we've got a successful response, with all the user
 information and the access and refresh tokens.
 
 Awesome!
@@ -652,7 +656,7 @@ password (TYPE_STRING) => wrong
 command call: rpc error: code = NotFound desc = incorrect password
 ```
 
-In this case, we still got a NOtFound error, but the 
+In this case, we still got a NotFound error, but the 
 message is "incorrect password".
 
 So everything is working well. And that brings us to the

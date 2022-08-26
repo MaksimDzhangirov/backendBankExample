@@ -91,12 +91,14 @@ some codes. In this lecture, I will show you how to write
 `protobuf` definition for 2 APIs: the API to create a new user,
 and the API to login user to get access and refresh tokens.
 
+## Write `protobuf` definition for create a new user API
+
 I'm gonna create a new folder called `proto` to store all the 
 `protobuf` files. Since our APIs will deal with users, I will
 start by defining the `User` object. So let's create a 
 `user.proto` file inside the `proto` folder.
 
-First, we set syntax = "proto3" to tell the compiler that we're
+First, we set `syntax = "proto3"` to tell the compiler that we're
 gonna use the `protobuf` syntax version 3 to define our 
 messages. There's also `protobuf` version 2, but I think it's 
 best to stick with the latest version.
@@ -123,7 +125,7 @@ files of the same topic together.
 package pb;
 ```
 
-Then, we must specify 1 option to tell `protoc` which Go package we 
+Then, we must specify 1 `option` to tell `protoc` which Go package we 
 want it to generate the Golang codes to. Basically, it should be a 
 subpackage of the root module we specified in the `go.mod` file: 
 `github.com/techschool/simplebank`.
@@ -140,7 +142,7 @@ Then with this option, the generated Go codes will go into the
 
 ![](../images/part40/4.png)
 
-OK, now we can define the User message like this. Inside the curly
+OK, now we can define the `User` message like this. Inside the curly
 brackets, we will have to specify all the fields that a `User` object
 will hold, which are the `Username`, `FullName`, `Email`, 
 `PasswordChangedAt`, `CreatedAt`. Just like what's currently 
@@ -171,7 +173,7 @@ This field number is very important in a `protobuf` message,
 because it will be used to uniquely identify the field when 
 [serialize or deserialize the message in binary format](https://developers.google.com/protocol-buffers/docs/proto3#assigning_field_numbers).
 You can use any integers between 1 and 2^29-1, except for 
-some reserved numbers, which you can find on the official protobuf
+some reserved numbers, which you can find on the official `protobuf`
 documentation page.
 
 You can also read more about different supported data types on
@@ -195,7 +197,6 @@ message User {
   string username = 1;
   string full_name = 2;
   string email = 3;
-  google.
 }
 ```
 
@@ -248,8 +249,8 @@ require 2 or more bytes. So by using small numbers, we're also
 saving some memory space, and thus make the message smaller in size
 when being encoded.
 
-Alright, so we've successfully defined a `User` object using protocol
-buffer.
+Alright, so we've successfully defined a `User` object using `protocol
+buffer`.
 
 Now it's time to define our first RPC: the create user API. I'm gonna
 create a new file called `rpc_create_user.proto` inside the `proto`
@@ -273,13 +274,18 @@ message CreateUserRequest {
 }
 ```
 
-We don't need this import here since there's no timestamp field
-in the message.
+We don't need this import here
+
+```protobuf
+import "google/protobuf/timestamp.proto";
+```
+
+since there's no timestamp field in the message.
 
 OK, now we have the `CreateUserRequest` message. Next, I'm gonna
 define another message to store the `CreateUserResponse`. This
 message will, of course, contain the information of the created 
-user. So we will have a user field of type `User` as field 
+user. So we will have a `user` field of type `User` as field 
 number 1. This is our custom data type, so we have to import it
 from the `user.proto` file.
 
@@ -316,7 +322,7 @@ for `proto3` and click `Edit` in `settings.json`.
 Now I'm gonna paste in the settings we've copied before, remove
 the outer curly brackets, then here, we can remove the 
 `/path/to/protoc` and the `compile_on_save` option. Just keep
-the options for `proto` path. All of our proto files are stored
+the `options` for `proto-path`. All of our `proto` files are stored
 in the `proto` folder, so that's what I'm gonna set to this option.
 And we can get rid of all remaining options. Just like that.
 
@@ -373,7 +379,7 @@ service SimpleBank {
 ![](../images/part40/7.png)
 
 Here we see the red lines again under the request and response 
-objects. And you know that to do, right? We have to import 
+objects. And you know what to do, right? We have to import 
 the `rpc_create_user.proto` file, since that's where the request 
 and response objects are defined.
 
@@ -383,6 +389,8 @@ import "rpc_create_user.proto";
 ```
 
 And we can get rid of this import `user.proto` file.
+
+## Write `protobuf` definition for login user API
 
 OK, so now everything looks good! We've successfully defined 1 
 gRPC API to create a new user. Can you do the same for the API
@@ -450,7 +458,7 @@ message LoginUserResponse {
 OK, now it's time to define the RPC in the 
 `service_simple_bank.proto` file. Let's import 
 `rpc_login_user.proto`, then duplicate the `CreateUser`
-rpc. I'm gonna change the second RPC's name to `LoginUser`.
+RPC. I'm gonna change the second RPC's name to `LoginUser`.
 Its input should be changed to `LoginUserRequest`, and the 
 output should be `LoginUserResponse`. And that's basically
 it!
@@ -472,7 +480,7 @@ this service definition. It's actually pretty simple, as we've
 already had all the necessary tools installed.
 
 In the `Makefile`, I'n gonna add a new command called `proto`.
-Then let's go back to the Quick Start page of the [gRPC 
+Then let's go back to the `Quick Start` page of the [gRPC 
 documentation website](https://grpc.io/docs/languages/go/quickstart/).
 
 You will find the `protoc` command to generate the codes 
@@ -489,15 +497,15 @@ proto:
 ```
 
 First, let's add the `proto_path` option to point to the location
-of our proto files, which is inside the `proto` folder. Then the
+of our `proto` files, which is inside the `proto` folder. Then the
 `go_out` option should point to the folder, where we want the 
 generated Golang codes to be, which, in our case, is the `pb` 
 folder. We keep this `go_opt=paths=source_relative` option as
 it is, then change the `go_grpc_out` option to the same `pb` 
 folder. Leave the `go-grpc_opt=paths=source_relative` as it is.
 Then finally, the last argument should be the location of our
-proto files, which is `proto/*.proto`, because we want to 
-generate codes for all proto files in that folder.
+`proto` files, which is `proto/*.proto`, because we want to 
+generate codes for all `proto` files in that folder.
 
 ```makefile
 proto:
@@ -531,7 +539,7 @@ So we have `rpc_create_user`, `rpc_login_user`,
 
 There's also another file called 
 `service_simple_bank_grpc.pb.go`. This is file that
-contains the gRPC server and client interfaces or stubs.
+contains the gRPC server and client interfaces or stubs,
 that we will base on to write the real implementation later.
 Right now there are some errors with the import packages.
 
@@ -552,7 +560,7 @@ in the terminal.
 Go mod will take care of the job to find missing packages and 
 download them for us. 
 
-Then voila, now all the red lines under the import packages are 
+Then voilà, now all the red lines under the import packages are 
 gone.
 
 ![](../images/part40/11.png)
@@ -575,11 +583,11 @@ This `rm` command will remove all existing Golang files under the
 run. Why should we do that?
 
 Well, because it will keep the code clean, since in case we want
-to remove some photo files, their corresponding generated Golang
+to remove some `proto` files, their corresponding generated Golang
 files will be gone too.
 
 And that brings us to the end of this lecture. Now you know how
-to write protobuf definition for a gRPC API service, and generate
+to write `protobuf` definition for a gRPC API service, and generate
 Golang code from it.
 
 In the next video, we will learn how to use that generated code

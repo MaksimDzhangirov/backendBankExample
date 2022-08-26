@@ -1,4 +1,4 @@
-# How to run a golang gRPC server and call its API
+# How to run a Golang gRPC server and call its API
 
 [Original video](https://www.youtube.com/watch?v=BkfBJIS0_ro)
 
@@ -8,6 +8,8 @@ a gRPC API using `protobuf` and generate Golang codes from it.
 So today let's learn how to use the generated codes to run 
 a gRPC server, and then connect to it using an interactive 
 client tool called `Evans`. OK, let's start!
+
+## Implement services using gRPC framework
 
 If you still remember, before we've implemented our web 
 services with HTTP JSON APIs using Gin framework. And 
@@ -19,9 +21,9 @@ Now, we want to implement the same set of services, but
 using gRPC framework instead. So, I'm gonna create a new
 separate package for that.
 
-Let's call it `gapi`. And inside this package. I'm gonna create
+Let's call it `gapi`. And inside this package I'm gonna create
 a new file: `server.go`. This file will contain the `Server` 
-struct, similar to that of the Gin Server we implemented before.
+struct, similar to that of the Gin `Server` we implemented before.
 The only difference is that, we're gonna serve gRPC requests 
 instead of HTTP. So I'm gonna copy this `NewServer` function
 code from this file `api/server.go`, and paste it to our new 
@@ -118,7 +120,7 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 The client will call the server by simply executing an RPC, 
 just like it's calling a local function.
 
-OK, so now we have a function to create a new server. Hovewer,
+OK, so now we have a function to create a new server. However,
 it's not a gRPC server yet. In order to turn it into a gRPC
 server, we have to use the codes that `protoc` has generated 
 for us in the [previous lecture](part40-eng.md). Let's take a 
@@ -178,7 +180,7 @@ func runGinServer(config util.Config, store db.Store) {
 }
 ```
 
-This function will need to accept 2 parameters: the `config`
+This function will need to accept 2 parameters: the `util.Config`
 object and the `db.Store` object.
 
 OK, now I'm gonna declare another function to run gRPC server
@@ -220,10 +222,12 @@ creating a new server down here for Gin, so I'm gonna
 copy it. 
 
 ```go
+grpcServer := grpc.NewServer()
 server, err := api.NewServer(config, store)
 if err != nil {
-    log.Fatal("cannot create server:", err)
+log.Fatal("cannot create server:", err)
 }
+pb.RegisterSimpleBankServer(grpcServer, server)
 ```
 
 But, we have to change the package name from `api` to 
@@ -231,7 +235,7 @@ But, we have to change the package name from `api` to
 gRPC server object. I'm gonna refactor the code a bit 
 to make it easier to read.
 
-Let's move the gRPC server variable down here, right 
+Let's move the `grpcServer` variable down here, right 
 before we register it.
 
 ```go
@@ -282,7 +286,7 @@ environment variables, we have to update our `config` struct
 to reflect the change.
 
 First, this `mapstructure:"SERVER_ADDRESS"` should be changed 
-to HTTP server address. Then I'm gonna add one more field for
+to `HTTP_SERVER_ADDRESS`. Then I'm gonna add one more field for
 the gRPC server address as well.
 
 ```go
@@ -343,6 +347,8 @@ make server
 There are no errors, so it means that the gRPC server has been started
 successfully on port 9090.
 
+## Install and use Evans for testing purpose
+
 Now let's try to call its APIs. For testing purpose, I'm gonna use a tool
 called Evans.
 
@@ -401,7 +407,7 @@ evans --host localhost --port 9090 -r repl
 pb.SimpleBank@localhost:9090> 
 ```
 
-And voila, we're now inside the Evans console and can talk to the
+And voilà, we're now inside the Evans console and can talk to the
 server. We can run
 
 ```shell
@@ -419,7 +425,7 @@ to list all services and RPCs available on the server.
 As you can see, we haven't implemented any APIs yet, but there
 are already 2 RPCs available: `CreateUser` and `LoginUser`. That's
 because we have embedded the `UnimplementedSimpleBankServer` struct
-inside our Server struct before. Now let's try to call `CreateUser`
+inside our `Server` struct before. Now let's try to call `CreateUser`
 RPC.
 
 ```shell
@@ -445,7 +451,7 @@ And we get back the response immediately. But of course, it is still
 an error, because the `CreateUser` method is not implemented on the
 server yet.
 
-Hovewer, it's enough to show that the gRPC server is already working,
+However, it's enough to show that the gRPC server is already working,
 and can accept the gRPC requests from the client. We can run
 
 ```shell
@@ -455,7 +461,7 @@ Good Bye :)
 
 to get out of the Evans console.
 
-Now I'm gonna add the Evans command to the Makefile. So that
+Now I'm gonna add the `evans` command to the Makefile. So that
 we can easily run it for testing our gRPC APIs later.
 
 ```makefile
@@ -470,7 +476,7 @@ make evans
 ```
 
 And that's the end of this lecture! We've successfully started a
-gRPC server and called its gRPC API using Evans client. Hovewer,
+gRPC server and called its gRPC API using Evans client. However,
 at the moment, all the RPCs to create and login users are not
 actually implemented yet. They're still returning an error code 
 by default.
