@@ -23,6 +23,8 @@ strings at the moment.
 
 So today, let's learn how to fill them with real metadata!
 
+## Extracting `user_agent` and `client_ip` from metadata
+
 But, first, let me remind you that we're using gRPC gateway, so
 the requests coming to this handler function can be from both
 a gRPC client (such as Evans CLI), as well as an HTTP client
@@ -36,7 +38,7 @@ different formats. Alright, now I'm gonna create a new file:
 I'm gonna add a new method to our server struct, let's call
 it `extractMetadata`. This function will take a context 
 object as input, because all the gRPC metadata will be 
-stored in this context, and it will return a Metadata
+stored in this context, and it will return a `Metadata`
 object as output. 
 
 ```go
@@ -70,7 +72,7 @@ func (server *Server) extractMetadata(ctx context.Context) *Metadata {
 }
 ```
 
-But first, let's go back to the RPC login user. Here, just 
+But first, let's go back to the RPC `LoginUser`. Here, just 
 before creating a session, we will call 
 `server.extractMetadata()`, and pass in the context, that we
 receive from the input argument of the `LoginUser` method.
@@ -304,7 +306,7 @@ and pass in the input context object.
 
 This function will return the peer information,
 together with a boolean value to tell us if the info
-exists or not. So we check if `ok` is true, then, 
+exists or not. So we check if `ok` is `true`, then, 
 the client's IP address will be stored in the 
 `p.Addr` field. We just need to convert it to
 string. And that's all!
@@ -317,6 +319,8 @@ if p, ok := peer.FromContext(ctx); ok {
 
 Both user agent and client IP fields have been
 extracted. Let's give it a try!
+
+## Testing code using Evans and Postman
 
 I'm gonna restart the server. Then, in the Evans
 client console, let's call Login User RPC again.
@@ -365,10 +369,10 @@ learned how to extract some useful information from
 the metadata of the gRPC context. I hope it's
 interesting and useful for you.
 
-And by th way, I've just created a Discord channel for Tech 
+And by the way, I've just created a Discord channel for Tech 
 School.
 
-Don't forget to join it to cha with me and other students.
+Don't forget to join it to chat with me and other students.
 
 Thanks a lot for watching! Happy learning, and see you 
 in the next lecture!
