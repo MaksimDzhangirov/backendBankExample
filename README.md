@@ -76,3 +76,30 @@
 
 [32. Как развернуть веб-приложение в Kubernetes кластере на AWS EKS](docs/part32-rus.md)
 
+[33. Регистрируем домен и настраиваем A-запись с помощью Route 53](docs/part33-rus.md)
+
+[34. Как использовать Ingress для маршрутизации трафика на разные сервисы в Kubernetes](docs/part34-rus.md)
+
+[35. Автоматическая выдача TLS сертификатов в Kubernetes с помощью Let’s Encrypt](docs/part35-rus.md)
+
+[36. Автоматическое развертывание в Kubernetes с помощью GitHub Action](docs/part36-rus.md)
+
+[37. Как управлять сессиями пользователя с помощью refresh токена - Golang](docs/part37-rus.md)
+
+[38. Создание страницы документации и SQL дампа структуры БД из DBML](docs/part38-rus.md)
+
+[39. Введение в gRPC](docs/part39-rus.md)
+
+[40. Определяем gRPC API и генерируем Go код с помощью protobuf](docs/part40-rus.md)
+
+[41. Как запустить gRPC сервер на Golang и вызвать его API](docs/part41-rus.md)
+
+[42. Реализуем gRPC API для создания и входа пользователей в систему на Go](docs/part42-rus.md)
+
+[43. Пишем один раз код, который сможет обслуживать как gRPC, так и HTTP-запросы](docs/part43-rus.md)
+
+[44. Как извлечь информацию из gRPC метаданных](docs/part44-rus.md)
+
+[45. Автоматическая генерация и выдача Swagger документации с помощью Go сервера](docs/part45-rus.md)
+
+
