@@ -6,26 +6,28 @@ Hello guys, welcome back to the backend master class!
 
 In the [previous lecture](part45-eng.md), we're learned how to generate 
 Swagger documentation and serve it directly from our Golang backend web 
-server. However, for now, we're serving the whole swagger folder with all the 
+server. However, for now, we're serving the whole `swagger` folder with all the 
 static files inside it. This is not a problem, but we will have to change
 the Dockerfile, copy all those static files into the final Docker image for
 deployment. It's a bit annoying for me because our backend image will end
 up containing too many frontend files while it just has 1 single binary
 file of the backend server.
 
-One of the most anticipated features of Go 1.16 is the support for embedding 
-files and folders into the application binary at compile-time without using 
-an external tool. This feature is also known as `go:embed`, and it gets its 
-name from the compiler directive that makes this functionality 
-possible: `//go:embed`. So you can [use this directive](https://blog.carlmjohnson.net/post/2021/how-to-use-go-embed/)
-instead of method described in lecture.
+## Include all static frontend files into the binary backend server
+
+> One of the most anticipated features of Go 1.16 is the support for embedding 
+> files and folders into the application binary at compile-time without using 
+> an external tool. This feature is also known as `go:embed`, and it gets its 
+> name from the compiler directive that makes this functionality 
+> possible: `//go:embed`. So you can [use this directive](https://blog.carlmjohnson.net/post/2021/how-to-use-go-embed/)
+> instead of method described in lecture.
 
 Now, what if I tell you we can include all static frontend files into the
 same binary backend server as well? Yes, we can do it using a special tool
 called `statik`. `statik` allows you to embed a directory of static files
 into your Go executable binary to be later served from an HTTP file 
 server. In fact, this is a very good idea, especially when we just want to
-serve our frontend code, which was developed by a javascript framework 
+serve our frontend code, which was developed by a Javascript framework 
 like React or Vue, because it just makes deploying the frontend page much
 simpler. Everything will be included in just 1 single binary file, so we
 don't even have to change our Dockerfile. And besides, since all static files
@@ -68,7 +70,7 @@ of the asset, and the destination directory of the generated Go package.
 You can also specify the namespace where the assets will be loaded. It's
 simply a key that uniquely identifies the static asset. You will need to 
 use it if you want to serve multiple assets on the same server. For 
-example, you can use one namespace for the swagger doc, and another 
+example, you can use one namespace for the Swagger doc, and another 
 namespace for the frontend page. If you don't specify a namespace, the
 asset will be registered in the default one. Alright, now I'm gonna update
 the `make proto` command to generate static binary package every time
@@ -103,12 +105,12 @@ Code, and look into the `doc` folder, we will see that a new folder called
 file. You can open this file to see its content, but I'm pretty sure you
 can't understand most of the codes in this file, unless you're a robot :D,
 because 99% content of this file is binary code, which is the result of
-compilling all the static files inside the swagger folder. Of course,
+compilling all the static files inside the `swagger` folder. Of course,
 these's still 1% you can understand here: which is, the binary code 
 is written inside the `init()` function. It's a special function in Go,
 that would get executed automatically whenever its package is imported. 
 And if you scroll all the way down, you will see that it simply calls a
-function to register the binary data. If you press command (Ctrl) and click
+function to register the binary data. If you press Command (Ctrl) and click
 on this `Register` function,
 
 ![](../images/part46/1.png)
@@ -133,13 +135,13 @@ and then builds an HTTP file system object for us to serve the assets.
 Alright, now it's time to get back to our code and learn how to use it.
 
 In the `runGatewayServer()` function, here, instead of creating a file 
-server to serve the swagger folder, we will create a static file server
+server to serve the `swagger` folder, we will create a static file server
 by calling `fs.New()`. This `fs` package is a subpackage of `statik` and
 the `New()` function is the one we've just seen a moment ago, which
 loads data from the default namespace. If you use a custom namespace, you
 should call the `NewWithNamespace()` function instead of `New()`. This 
 function will return a file system object and an error. If error is not 
-nil, we write a fatal log saying "cannot create statik file system". 
+`nil`, we write a fatal log saying "cannot create statik file system". 
 Otherwise, all the static assets have been loaded into `statikFS` variable.
 So all we have to do is to serve them.
 
@@ -153,8 +155,8 @@ if err != nil {
 Now, to make the code cleaner and easier to read, I'm gonna move this
 `http.StripPrefix()` function call up here and store its output in a 
 new variable called `swaggerHandler`. And here, instead of passing in
-the old fs, we will create a new one with `http.FileServer()`, and pass
-in the statik file system object that we've loaded above.
+the old `fs`, we will create a new one with `http.FileServer()`, and pass
+in the `statikFS` file system object that we've loaded above.
 
 ```go
 swaggerHandler := http.StripPrefix("/swagger/", http.FileServer(statikFS))
@@ -189,18 +191,19 @@ zip data registered".
 ```shell
 make server
 go run main.go
-2022/04/10 17:04:50 cannot create statik fs
+2022/04/10 17:04:50 cannot create statik fs:statik/fs: no zip data registered
 exit status 1
 make: *** [server] Error 1
 ```
 
-Can you huess why we get this error? Well, that's because I forgot to
+Can you guess why we get this error? Well, that's because I forgot to
 import the generated `statik` package, so the `init()` function doesn't 
 get called, thus there's no data registered in the `zipData` map. That's
 why we can't load it. In order to fix this, we have to add a blank
-import at the top of the `main.go` file as it's a subpackage of our simple
-bank package. I'm gonna copy the full simple bank package name, paste it 
-here, in the import list, and add "/doc/statik" suffix at the end.
+import at the top of the `main.go` file as it's a subpackage of our 
+`backendBankExample` package. I'm gonna copy the full simple bank package 
+name, paste it here, in the import list, and add "/doc/statik" suffix at 
+the end.
 
 ```go
 "github.com/MaksimDzhangirov/backendBankExample/api"
@@ -212,7 +215,7 @@ This will point to the `statik` package inside the `doc` folder, which
 has been generated for us before. OK, now let's save the file, then go 
 back to the terminal and restart the server.
 
-Now if we open the browser and refresh the swagger page, it will work
+Now if we open the browser and refresh the Swagger page, it will work
 just like before. But this time, the page is served directly from the
 server's memory instead of the hard drive. And as a bonus of that, the
 page will load much faster compared to before.
@@ -274,7 +277,7 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
 
 For this demo, I'm just gonna add the summary and description, so let's
 copy them. And open the `service_simple_bank.proto` file in our project.
-I'm gonna paste it to the CreateUser RPC. Then, let's change the 
+I'm gonna paste it to the `CreateUser` RPC. Then, let's change the 
 description to "Use this API to create a new user" and the summary to 
 "Create new user".
 
@@ -291,7 +294,7 @@ rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {
 }
 ```
 
-Similarly, let's copy this option to the LoginUser RPC as well. Then
+Similarly, let's copy this option to the `LoginUser` RPC as well. Then
 change the description to "Use this API to login user and get access
 token & refresh token" and change its summary to "Login user".
 
