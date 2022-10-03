@@ -4,13 +4,13 @@
 
 Hello guys, welcome back to the backend master class!
 
-In previous lectures, we-ve learned how to implement the `CreateUser` and
+In previous lectures, we've learned how to implement the `CreateUser` and
 `LoginUser` API using gRPC. We also learned how to use gRPC gateway to
 serve both gRPC and HTTP requests. However, there's something still missing!
 We haven't written any codes to validate the input parameters of the 
 request. If you still remember, before, when we implemented the API using
 Gin, we used the `binding` tag to specify the valid format of the params,
-because Gin uses the validator v10 package under the hood to validate the
+because Gin uses the `validator v10` package under the hood to validate the
 input data. But now, as we've switched to gRPC, this package is no longer
 suitable. I'm not saying we can't use it anymore, but let me show you why 
 I don't like the way this package does with the error response. I'm gonna
@@ -58,6 +58,8 @@ as the codes. And stop the Gin server.
 
 ![](../images/part47/3.png)
 
+## Validate gRPC parameters in CreateUser method
+
 Alright, now let's go back to the code, and open the `rpc_create_user.go`
 file inside the `gapi` folder. In this `CreateUser` method, there's a 
 request object that gRPC has parsed and provided to us. It contains all 
@@ -101,10 +103,7 @@ value string as input and will return an error if it is invalid. First, we
 will check the length of the username. Let's say we want it to have at 
 least 3 and at most 100 characters. For this purpose, I use the 
 `ValidateString()` function we've just written above. If that function 
-returns a not `nil` error, we simply return it. Otherwise, we will further
-check the username's format using regular expressions. Suppose that we 
-only allow the username to contain lowercase letters, digits, or 
-underscores.
+returns a not `nil` error, we simply return it.
 
 ```go
 func ValidateUsername(value string) error {
@@ -115,15 +114,17 @@ func ValidateUsername(value string) error {
 }
 ```
 
-So at the top of the file, I will declare a variable called
-`isValidUsername` and call the `regexp.MustCompile` function to define its
-format using regular expressions. The caret character marks the beginning
-of the string, then a pair of square brackets to list all possible 
-characters we want to have in the string, so let's put a-z, 0-9, and an 
-underscore inside it. Then right next to the square bracket, we will use
-the plus character. This means that any character inside the square bracket
-can appear one or more times in the string. Finally, the dollar character 
-marks the end of the string.
+Otherwise, we will further check the username's format using regular 
+expressions. Suppose that we only allow the username to contain lowercase 
+letters, digits, or underscores. So at the top of the file, I will declare 
+a variable called `isValidUsername` and call the `regexp.MustCompile` 
+function to define its format using regular expressions. The caret character 
+marks the beginning of the string, then a pair of square brackets to list 
+all possible characters we want to have in the string, so let's put `a-z`, 
+`0-9`, and an underscore inside it. Then right next to the square bracket, we 
+will use the plus character. This means that any character inside the square 
+bracket can appear one or more times in the string. Finally, the dollar 
+character marks the end of the string.
 
 ```go
 var (
@@ -216,6 +217,9 @@ instead. And the error message should be changed to "must contain only
 letters or spaces".
 
 ```go
+var (
+    isValidFullName = regexp.MustCompile(`^[a-zA-Z\\s]+$`).MatchString
+)
 func ValidateFullName(value string) error {
 	if err := ValidateString(value, 3, 100); err != nil {
 		return err
@@ -332,7 +336,7 @@ func validateCreateUserRequest(req *pb.CreateUserRequest) (violations []*errdeta
 }
 ```
 
-Next, let's add the validation for the full name field in a similar fashion.
+Next, let's add the validation for the "full_name" field in a similar fashion.
 Note that here I use "full_name" with an underscore, because it's what we
 defined in the `proto` file.
 
@@ -374,8 +378,7 @@ response! The way we should do it is to create a `badRequest` object with
 the field violations data. This object is also already defined in the
 `error details` package. We also have to create a new `status` 
 object with code `InvalidArgument` and a message saying "invalid 
-parameters". Next, we must add more details about those invalid parameters
-to the `statusInvalid` object.
+parameters".
 
 ```go
 func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
@@ -388,16 +391,18 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 }	
 ```
 
-To do that, we simply call `statusInvalid.WithDetails()` function, and pass
-in the `badRequest` object as input arguments. This function will return
-a new `status` object with more details, and an error. If error is not nil,
-it means that there's something wrong with the `badRequest` details. If
-it's the case, we can just ignore it, and return the original 
-`statusInvalid.Err()` without details. Of course, the `CreateUserResponse` 
-object should be `nil` in this case. Otherwise, we can return the 
-`statusDetails.Err()` with all the details about the invalid fields. I know
-this looks quite complicated for error handling, but trust me, it's 
-totally worth it! You will understand when you see the result later.
+Next, we must add more details about those invalid parameters to the 
+`statusInvalid` object. To do that, we simply call 
+`statusInvalid.WithDetails()` function, and pass in the `badRequest` object 
+as input arguments. This function will return a new `status` object with 
+more details, and an error. If error is not `nil`, it means that there's 
+something wrong with the `badRequest` details. If it's the case, we can 
+just ignore it, and return the original `statusInvalid.Err()` without 
+details. Of course, the `CreateUserResponse` object should be `nil` in 
+this case. Otherwise, we can return the `statusDetails.Err()` with all 
+the details about the invalid fields. I know this looks quite complicated 
+for error handling, but trust me, it's totally worth it! You will understand 
+when you see the result later.
 
 ```go
 func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
@@ -478,10 +483,12 @@ We've completed the implementation of the input param validation for the
 It's time for you to pause the video and try to do it by yourself if you 
 like. Then we'll do it together in a moment.
 
+## Validate gRPC parameters in LoginUser method
+
 Alright, did you manage to implement it on your own? First, let's copy
 the `validateCreateUserRequest()` function to the `rpc_login_user.go` file
 and change its name from `CreateUser` to `LoginUser`. Note that we have to 
-change the request type to LoginUserRequest as well. And since the login
+change the request type to `LoginUserRequest` as well. And since the login
 request only has 2 parameters: username and password, I will keep them, 
 and delete all other fields' validation. OK, after saving the file, all 
 required packages will be automatically imported.
