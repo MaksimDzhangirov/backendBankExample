@@ -143,16 +143,16 @@ If we look at the documentation of `golang-migrate` on its GiHub repo,
 we will find a [section](https://github.com/golang-migrate/migrate#use-in-your-go-project)
 that shows us how to run DB migration using Golang.
 
-basically, we will have to create a new `migrate` object, where we must 
+Basically, we will have to create a new `migrate` object, where we must 
 pass in the location of the migration files, as well as the URL of the
-target database server. But first. let's copy this import migrate package
+target database server. But first, let's copy this import `migrate` package
 statement and paste it to our `main.go` file.
 
 ```go
 "github.com/golang-migrate/migrate/v4"
 ```
 
-Then. I'm gonna declare a new function called `runDBMigration()`. This 
+Then, I'm gonna declare a new function called `runDBMigration()`. This 
 function will take a migration URL, and a DB source string as input.
 
 ```go
@@ -181,7 +181,7 @@ func main() {
 right before starting the servers, and after we've loaded the environment 
 variables into the `config` object. Note that the migration URL should
 point to the location of the migration files, which can be either on the
-local machine or a remote host. In our case, it will be the migration 
+local machine or a remote host. In our case, it will be the `migration` 
 folder inside the Docker container. Because in the `Dockerfile`, we've
 copied the whole content of the `db/migration` folder to the Docker
 image.
@@ -439,7 +439,7 @@ docker-compose down
 
 to remove all existing services.
 
-Check the existing docker images,
+Check the existing Docker images,
 
 ```shell
 docker images
@@ -457,7 +457,7 @@ OK, now everything is clean, I'm gonna run
 docker compose up
 ```
 
-It's gonna rebuild the docker image, then start the postgres database,
+It's gonna rebuild the Docker image, then start the Postgres database,
 and then try to start the `simplebank-api`.
 
 ![](../images/part48/11.png)

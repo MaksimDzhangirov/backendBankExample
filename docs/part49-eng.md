@@ -6,6 +6,8 @@ Hello guys, welcome to the backend master class. Today, we're gonna learn
 how to handle partial updates using SQLC, and along with that, we will 
 also learn how to work with nullable fields in Go. OK, let's start!
 
+## Partial update DB record. First solution
+
 If you still remember, in lecture 16 of the course, we've added 2 SQL 
 queries to create a new user and fetch a user by username.
 
@@ -27,7 +29,7 @@ WHERE username = $1 LIMIT 1;
 
 Now, suppose that we want to provide a new query that can update some
 of its information, such as password, full name, and email. So I'm gonna
-define a new query named UpdateUser, that will return one user record 
+define a new query named `UpdateUser`, that will return one user record 
 after updating it. First, we will write a simple `UPDATE users` query 
 to update all fields at once. So, let's set `hash_password` to `$1`, which
 means the first argument. Then set `full_name` to `$2`, and `email` to `$3`.
@@ -81,9 +83,9 @@ several solutions. The simplest one would be using some boolean
 flag parameters to tell the database whether we want to change the field
 or not. So here, instead of setting `hash_password` to `$1` I'm 
 gonna use a `CASE` statement to specify a branching condition. WHEN
-the boolean flag $1 is TRUE, we will set the hashed_password to the second
-parameter $2, ELSE when the flag is FALSE, we just set it to the original 
-value.
+the boolean flag `$1` is `TRUE`, we will set the `hashed_password` to the 
+second parameter `$2`, ELSE when the flag is `FALSE`, we just set it to the 
+original value.
 
 ```postgresql
 -- name: UpdateUser :one
@@ -102,11 +104,11 @@ RETURNING *;
 
 So with this change, if we want to change the `hashed_password`, just 
 set `$1` to `TRUE`, and specify its new value in `$2`. Or in case we
-don't want to change the hashed_password, simply set `$1` to `FALSE`. 
+don't want to change the `hashed_password`, simply set `$1` to `FALSE`. 
 Let's do this for the other 2 fields as well. For `full_name`, when `$3`
 is `TRUE`, set it to `$4`, else keep the original `full_name`. And for 
 `email`, when `$5` is `TRUE`, set it to `$6`, else keep the original
-`email` value. Finally, we have to change the username parameter to `$7`.
+`email` value. Finally, we have to change the `username` parameter to `$7`.
 And that's basically it.
 
 ```postgresql
@@ -164,7 +166,7 @@ instead. So how can we fix these 2 issues?
 
 Well, if we look at sqlc's [documentation page](https://docs.sqlc.dev/en/stable/howto/named_parameters.html), 
 there is a section about naming parameters. Here, to avoid the generated 
-code to contains some Column fields like this, we can use the `sqlc.arg()` 
+code to contain some Column fields like this, we can use the `sqlc.arg()` 
 function to specify the name of the parameter we want SQLC to generate. And 
 we can use this double-colons syntax to tell SQLC the exact data type of 
 this parameter.
@@ -367,10 +369,12 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 
 Awesome!
 
+## Partial update DB record. Second solution
+
 So that's the first solution to enable partial updates for our SQL 
 query. It's pretty easy to implement, but it also makes the query
 and the param struct a bit longer and more complicated than before. 
-NOw I'm gonna show you the second approach, which I think, is the
+Now I'm gonna show you the second approach, which I think, is the
 better solution. It involves using [nullable parameters](https://docs.sqlc.dev/en/stable/howto/named_parameters.html#nullable-parameters). 
 The idea is similar, but this time, instead of using a separate 
 `boolean` flag, we will use the parameter itself. If the parameter 
@@ -391,10 +395,10 @@ WHERE id = sqlc.arg('id');
 
 So in this example, if the `name` parameter is not null, its value will
 be used as the new value for the `name` column. Otherwise, the original
-value of the name column will be used.
+value of the `name` column will be used.
 
 Alright, let's go back to our `UpdateUser` query. Here, I will replace 
-`CASE` statement with COALENSE(), and pass in `sqlc.narg()` function
+`CASE` statement with `COALENSE()`, and pass in `sqlc.narg()` function
 as the first parameter. The name of this parameter should be 
 `hashed_password`. Then, the second param of the `COALESCE` function
 should be the original value of the `hashed_password` itself. 
@@ -411,7 +415,7 @@ the first argument is `sqlc.narg(full_name)`, and the second argument
 is the original `full_name` column's value. Finally, I'm gonna change
 the `email` parameter in the same manner. Here it should be `COALESCE(
 sqlc.narg(email))` followed by the original `email` column's value. 
-Since SQLC doesn't allow mixing named parameter and @ operator, we have 
+Since SQLC doesn't allow mixing named parameter and `@` operator, we have 
 to change this `@username` to `sqlc.arg(username)` as well. Note that
 it's `arg` (not `narg`) because the `username` parameter should not be
 `NULL` in any case.
@@ -452,13 +456,18 @@ the package, you can check its latest version with
 brew info sqlc
 ```
 
-OK, so the latest stable version is 1.15. This means, my `sqlc` compiler
+OK, so the latest stable version is `1.15`. This means, my `sqlc` compiler
 is really out of date. So we should update it to the latest version.
 You can check out its [documentation page](https://docs.sqlc.dev/en/stable/overview/install.html) 
 to know how to do that on your OS. By the way, if you're using Windows,
 you should install `sqlc` using Docker instead of the pre-build binary.
-Here's the command to generate Go code from SQL query using Docker. For
-me, I'm on a Mac, so I will run 
+Here's the command to generate Go code from SQL query using Docker.
+
+```shell
+docker run --rm -v "%cd%:/src" -w /src kjconroy/sqlc generate
+```
+
+For me, I'm on a Mac, so I will run 
 
 ```shell
 brew upgrade sqlc
@@ -467,7 +476,7 @@ brew upgrade sqlc
 to upgrade it to the latest version.
 
 Interesting, we've got a warning: `sqlc 1.8 already installed`. So 
-somehow it didn't upgrade `sqlc` to 1.15. I think there must be something
+somehow it didn't upgrade `sqlc` to `1.15`. I think there must be something
 wrong with Homebrew. Let's try uninstall `sqlc` completely by running
 
 ```shell
@@ -480,7 +489,7 @@ Then reinstall it with
 brew install sqlc
 ```
 
-OK, now we can see that it's installing the latest version 1.15.
+OK, now we can see that it's installing the latest version `1.15`.
 
 ![](../images/part49/1.png)
 
@@ -491,7 +500,7 @@ sqlc version
 v.1.15.0
 ```
 
-Indeed, the current version is now 1.15.
+Indeed, the current version is now `1.15`.
 
 So now it should be able to understand the `sqlc.narg()` function.
 Let's run 
@@ -528,6 +537,8 @@ The type of the `HashedPassword`, `FullName` and `Email` fields is now
 struct with 2 fields: `String` and `Valid`, where `Valid` should be `TRUE`
 if the `String` is not `NULL`.
 
+## Writing tests
+
 Alright, how about we try to write some tests to really understand how 
 to work with this new data type?
 
@@ -545,7 +556,7 @@ the type of the `FullName` field is `sql.NullString`. So we have to
 create a new `sql.NullString{}` object, and as I said before, we need
 to specify the `String` and `Valid` value. In this case, the `String`
 value should be `newFullName`, and of course, `Valid` should be `TRUE`,
-since the string is not `null`. We don't have to specify anything about
+since the `String` is not `null`. We don't have to specify anything about
 the `HashedPassword` and `Email` because by default, their `Valid` field
 will be `FALSE`, and thus, they will be treated as `NULL`. OK, now, the
 function will return the updated user and an error.
@@ -649,7 +660,7 @@ Now is the time for you to pause the video and try it. It's pretty
 easy, right?
 
 First, we duplicate the function, change its name to 
-TestUpdateUserOnlyPassword. Then here, we will create a new password with
+`TestUpdateUserOnlyPassword`. Then here, we will create a new password with
 `util.RandomString` of 6 characters. And we call `util.HashPassword` to
 hash the newly generated password. This function will return a 
 `newHashedPassword` and an error. We require the error to be `nil`, 
@@ -705,8 +716,8 @@ I'm gonna duplicate the test. Then change its name to
 `TestUpdateUserAllFields`. Next, let's generate a new full name with
 `util.RandomOwner()`, and a new email with `util.RandomEmail()`. Then,
 in the `UpdateUser` function, I'm gonna add the `FullName` field
-as a new `sql.NullString`. Its string value should be `newFullName`, 
-and the valid filed should be `TRUE`. Similarly, let's add `Email`
+as a new `sql.NullString`. Its `String` value should be `newFullName`, 
+and the `Valid` filed should be `TRUE`. Similarly, let's add `Email`
 field to the object, and change its value to `newEmail`.
 
 ```go
@@ -737,7 +748,7 @@ func TestUpdateUserAllFields(t *testing.T) {
 }
 ```
 
-OK, now for the checking part, I'm gonna copy the 2 require statements
+OK, now for the checking part, I'm gonna copy the 2 `require` statements
 of `HashedPassword`. We must make sure that the old and new users have
 different emails. And the updated user's email should be equal to the
 new email. Same thing for the full name, the updated user's full name
@@ -770,10 +781,12 @@ It's also passed. Awesome!
 
 And that's all I wanted to show you in this video. We've learned a good 
 way to do partial updates with Golang and SQLC using nullable parameters
-and COALESCE function in our query.
+and `COALESCE` function in our query.
 
 I hope it was interesting and useful for you. Thanks a lot for watching!
 Happy learning and see you in the next lecture!
+
+## Updating Golang to version 1.19
 
 Hey, before you go, I want to quickly show you a very small thing. 
 Recently I've updated the Golang compiler of our project to version 1.19.
@@ -787,7 +800,7 @@ To update Go, you just need to open [go.dev](https://go.dev/), go to
 [Downloads page](https://go.dev/dl/), and download the install package 
 for your target OS. After installing the new Go compiler version, we
 have to update our project to use it. In the `go.mod` file, let's
-change the go version to `1.19`.
+change the Go version to `1.19`.
 
 ```
 module github.com/MaksimDzhangirov/backendBankExample
@@ -796,7 +809,7 @@ go 1.19
 ```
 
 Then, in the GitHub CI workflow that runs unit tests, I'm gonna change
-the go version to 1.19 as well.
+the Go version to 1.19 as well.
 
 ```yaml
     steps:
@@ -831,7 +844,7 @@ FROM alpine3.16
 WORKDIR /app
 ```
 
-Alright, now in the terminal. let's run
+Alright, now in the terminal, let's run
 
 ```shell
 go mod tidy

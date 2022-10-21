@@ -42,7 +42,7 @@ their names to `UpdateUserRequest` and `UpdateUserResponse`.
 Now, for request, its `username` should be a mandatory field, while the 
 `full_name`, `email`, and `password` can be optional. The reason is that
 users might want to update only 1 or 2 out of those 3 fields. So, how
-can we tell protoc about this?
+can we tell `protoc` about this?
 
 Well, since `protobuf` version `3.15`, we can use the `optional` keyword
 to tell `protoc` that this field is not mandatory. So let's add it to all
@@ -70,7 +70,7 @@ message UpdateUserResponse {
 }
 ```
 
-OK, next, we have to add a new RPC to the simple bank service. So I'm
+OK, next, we have to add a new RPC to the `SimpleBank` service. So I'm
 gonna open this `service_simple_bank.proto` file, and import the 
 `rpc_update_user.proto` file we've just written.
 
@@ -262,7 +262,7 @@ Remember that `HashedPassword`, `FullName` and `Email` are all optional,
 that's why their data type is not `string`, but `NullString` struct
 instead. So I'm gonna delete them, then let's redeclare `FullName` as 
 a `sql.NullString` object. Its string value should be set to 
-`req.GetFullName()`. And its valid field is only `true` if the
+`req.GetFullName()`. And its `Valid` field is only `true` if the
 `req.FullName` is not `nil`, which means, its value is really provided
 by the client.
 
@@ -292,7 +292,7 @@ FullName: sql.NullString{
 ```
 
 and change the field name to `Email`, its `String` value to 
-`req.GetEmail()` and its `Valid` field to: req.Email is not `nil`.
+`req.GetEmail()` and its `Valid` field to: `req.Email` is not `nil`.
 
 ```go
 Email: sql.NullString{
@@ -302,7 +302,7 @@ Email: sql.NullString{
 ```
 
 The last field we have to update is `HashedPassword`. I'm gonna cut
-this piece of code from here,
+this piece of code from here.
 
 ```go
 hashedPassword, err := util.HashPassword(req.GetPassword())
@@ -335,7 +335,7 @@ be `true`, since we already checked that password is not `nil`.
 OK, so now the update user argument is ready, we can call 
 `server.store.UpdateUser` with that object. If this call returns a not 
 `nil` error, we don't have to check if it's `unique_violation` like
-in the CreateUser API, because in this UpdateUser API, we don't 
+in the `CreateUser` API, because in this `UpdateUser` API, we don't 
 update the `Username`. But if the `Username` doesn't exist, we will
 get a `sql.ErrNoRows` error. In this case, we should return an error 
 with status code `NotFound`, and a message saying: "user not found".
@@ -361,7 +361,7 @@ rsp := &pb.UpdateUserResponse{
 return rsp, nil
 ```
 
-And that should be it for the UpdateUser RPC.
+And that should be it for the `UpdateUser` RPC.
 
 But there's one more thing we need to do to make it fully 
 complete. That is, improving the way we validate the 
@@ -404,6 +404,8 @@ Let's open the terminal and start the server.
 make server
 ```
 
+## Using Postman for testing
+
 As the server is serving both gRPC and HTTP requests, we can 
 test it using any gRPC or HTTP client tool. I'm gonna use
 Postman to send HTTP requests. And since the `UpdateUser` API
@@ -416,7 +418,7 @@ and change its name to `UpdateUser`.
 
 ![](../images/part50/3.png)
 
-Then, in the body of the request, let's just keep the username,
+Then, in the body of the request, let's just keep the `username`,
 and delete all other fields. Let's try sending this request
 which doesn't update anything.
 
@@ -440,12 +442,12 @@ This time, we got another error: `user not found`.
 ![](../images/part50/8.png)
 
 So it seems to be working, but we have to create the user 
-Alice first. So I'm gonna open the `CreateUser` API, and send 
+`Alice` first. So I'm gonna open the `CreateUser` API, and send 
 this request to the server.
 
 ![](../images/part50/9.png)
 
-OK, now user Alice has been created,
+OK, now user `Alice` has been created,
 
 ![](../images/part50/10.png)
 
@@ -462,8 +464,8 @@ Alice", and resend the request!
 
 ![](../images/part50/12.png)
 
-Oops. this time we've got a field violations error: `Full name
-must contain only letters or spaces. This is weird because
+Oops, this time we've got a field violations error: `Full name
+must contain only letters or spaces`. This is weird because
 it is indeed containing only letters and spaces.
 
 So I guess there's something wrong with our validation code.
@@ -523,7 +525,7 @@ Let's open the `user.sql` file! I'm gonna duplicate this set
 hashed_password = COALESCE(sqlc.narg(hashed_password), hashed_password),
 ```
 
-then change the field name to `password_changed_at`, as we've
+then change the field name to `password_changed_at`. As we've
 learned in previous lecture, we can use the `COALESCE` function
 together with SQLC's nullable argument to tell the database
 whether we want to change the value of this `password_changed_at`
@@ -566,8 +568,8 @@ Here, after setting `arg.HashedPassword` to the new value,
 we should update the `PasswordChangedAt` field as well. 
 It's also a nullable field, that's why its type is 
 `sql.NullTime`. So, I'm gonna set `arg.PasswordChangedAt`
-to a new `sql.NullTime` object, where its time value should
-be the current timestamp, and its valid field should be set
+to a new `sql.NullTime` object, where its `Time` value should
+be the current timestamp, and its `Valid` field should be set
 to `true`. That's basically it!
 
 ```go
@@ -599,7 +601,7 @@ This time, the value of the `password_changed_at` field has
 been updated. Excellent!
 
 Now, how about we try to update all 3 fields at the same time?
-I'm gonna set the full name to Alice, the email to 
+I'm gonna set the full name to "Alice", the email to 
 "alice@gmail.com", and the password to "secret". Then send the
 request one more time.
 
