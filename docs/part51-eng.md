@@ -94,7 +94,7 @@ func (server *Server) authorizeUser(ctx context.Context) (*token.Payload, error)
 ```
 
 And we should check if this array is empty or not. If the 
-length of values is 0, we return `nil` payload, and an error
+length of `values` is 0, we return `nil` payload, and an error
 saying "missing authorization header". Otherwise, the auth header
 will be the first item of the array.
 
@@ -123,7 +123,7 @@ auth header by spaces. The standard `strings` package already
 provided the `Fields` function for this purpose. We expect the
 output fields array to have 2 items, 1 containing the `Bearer`
 string, and 1 containing the access token. So if its length 
-is less than 2, we return an error: "Invalid authorization 
+is less than 2, we return an error: "invalid authorization 
 header format". Else, the first field is gonna be the 
 authorization type. I will convert it to lowercase to make it
 easier to compare.
@@ -219,14 +219,14 @@ Alright, now the `authorizedUser()` method is ready, we can go
 back to the RPC `UpdateUser` handler to use it. At the top of
 the function, let's call `server.authorizedUser()` with the
 input context and save the output to the `authPayload` and 
-error variables. If error is not `nil`, we should return an 
+`error` variables. If error is not `nil`, we should return an 
 error with an unauthenticated status code to the client.
 
 ```go
 func (server *Server) UpdateUser(ctx context.Context, req *pb.UpdateUserRequest) (*pb.UpdateUserResponse, error) {
 	authPayload, err := server.authorizeUser(ctx)
 	if err != nil {
-		
+        return nil, unauthenticatedError(err)
 	}
 	
 	...
@@ -301,6 +301,10 @@ Let's try to run the server and test it!
 
 ```shell
 make server
+go run main.go
+2022/09/14 16:48:53 db migrated successfully
+2022/09/14 16:48:53 start gRPC server at [::]:9090
+2022/09/14 16:48:53 start HTTP gateway server at [::]:8080
 ```
 
 ## Testing HTTP server
@@ -400,7 +404,7 @@ gonna select this test to check status code is 200.
 
 ![](../images/part51/11.png)
 
-It will add this small piece of code to the test, 
+It will add this small piece of code to the `Test`, 
 
 ```js
 pm.test("Status code is 200", function () {
@@ -502,14 +506,14 @@ OK, now let's copy the access token. And let's save this request
 with this name: "Login User RPC". We can't store this request
 in the `Simple Bank` collection because that collection is for
 HTTP requests only. So I'm gonna create a new collection called
-Simple Bank gRPC.
+`Simple Bank gRPC`.
 
 ![](../images/part51/25.png)
 
 ![](../images/part51/26.png)
 
-Alright, now the new collection has been created with the Logic
-User RPC.
+Alright, now the new collection has been created with the "Logic
+User RPC".
 
 To create a new request, we can click this button and select
 "Add Request", then `gRPC request`.
@@ -538,22 +542,22 @@ invalid token to see what happens.
 
 We still got `16 Unauthenticated`, but the message is now "token
 is invalid". So it seems to be working well. Now I'm gonna 
-paste in the valid access token we got from Login User RPC
+paste in the valid access token we got from "Login User RPC"
 before and invoke the method one more time.
 
 ![](../images/part51/31.png)
 
-this time, the request is successful, and full name have been
-updated. Exactly as we wanted. WE can also add email to the 
+This time, the request is successful, and full name have been
+updated. Exactly as we wanted. We can also add email to the 
 message to change it to `alice@gmail.com` and resend the request.
 
 ![](../images/part51/32.png)
 
-Then voila, the email has been updated to the new value.
+Then voilà, the email has been updated to the new value.
 
-And that brings us to the end of this video. today we've 
+And that brings us to the end of this video. Today we've 
 successfully added the authorization layer to the gRPC server
-to protect our Update User API.
+to protect our `UpdateUser` API.
 
 I hope you find it interesting and useful. Thanks a lot for
 watching! Happy learning, and see you in the next lecture.
