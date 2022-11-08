@@ -3,6 +3,14 @@ package main
 import (
 	"context"
 	"database/sql"
+	"net"
+	"net/http"
+	"os"
+
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
+	"google.golang.org/protobuf/encoding/protojson"
+
 	"github.com/MaksimDzhangirov/backendBankExample/api"
 	db "github.com/MaksimDzhangirov/backendBankExample/db/sqlc"
 	_ "github.com/MaksimDzhangirov/backendBankExample/doc/statik"
@@ -17,12 +25,6 @@ import (
 	"github.com/rakyll/statik/fs"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/reflection"
-	"google.golang.org/protobuf/encoding/protojson"
-	"net"
-	"net/http"
-	"os"
 )
 
 func main() {
@@ -125,7 +127,8 @@ func runGatewayServer(config util.Config, store db.Store) {
 	}
 
 	log.Info().Msgf("start HTTP gateway server at %s", listener.Addr().String())
-	err = http.Serve(listener, mux)
+	handler := gapi.HttpLogger(mux)
+	err = http.Serve(listener, handler)
 	if err != nil {
 		log.Fatal().Err(err).Msg("cannot start HTTP gateway server")
 	}
