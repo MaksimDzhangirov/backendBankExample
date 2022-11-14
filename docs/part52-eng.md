@@ -37,7 +37,7 @@ func UnaryInterceptor(i UnaryServerInterceptor) ServerOption {
 }
 ```
 
-this function will create a server option that sets the unary interceptor
+this function will create a `ServerOption` that sets the unary interceptor
 for our gRPC server. And what we have to do is implement this 
 `UnaryServerInterceptor` interface.
 
@@ -76,8 +76,8 @@ Alright, let's leave this function empty for now, we will go back here to
 implement it in a moment. Now, let's open the `main.go` file and try to
 add the logger interceptor to the gRPC server. Here, I will pass the 
 `gapi.GrpcLogger` function into this `grpc.UnaryInterceptor`. It will 
-return a server option object, so let's name it `grpcLogger`. Then, we will
-pass this gRPC logger into the `grpc.NewServer()` function.
+return a `ServerOption` object, so let's name it `grpcLogger`. Then, we will
+pass this `grpcLogger` into the `grpc.NewServer()` function.
 
 ```go
 func runGrpcServer(config util.Config, store db.Store) {
@@ -93,7 +93,7 @@ func runGrpcServer(config util.Config, store db.Store) {
 ```
 
 And that's how we add an interceptor to the gRPC server. Note that this
-function can take multiple server options, so you can easily add more
+function can take multiple `ServerOptions`, so you can easily add more
 interceptors or whatever options you need to the server.
 
 OK, now it's time to implement the gRPC logger interceptor.
@@ -294,7 +294,7 @@ func GrpcLogger(
 }
 ```
 
-And since our server supports oth gRPC and HTTP requests, I'm gonna
+And since our server supports both gRPC and HTTP requests, I'm gonna
 add a string field to the log to tell us about its protocol, which is
 gRPC in this case.
 
@@ -458,7 +458,7 @@ go run main.go
 
 The server is started.
 
-Let's go back to Postman and invoke the LoginUser RPC.
+Let's go back to Postman and invoke the `LoginUser` RPC.
 
 ![](../images/part52/8.png)
 
@@ -476,7 +476,7 @@ I'm gonna log in with a user that doesn't exist: `bob`.
 
 ![](../images/part52/10.png)
 
-As you can see, we've got status code 5: `NOT FOUND`. Let's see what we
+As you can see, we've got status code `5`: `NOT FOUND`. Let's see what we
 have in the server log.
 
 ![](../images/part52/11.png)
@@ -515,13 +515,13 @@ you can see that it returns a `zerolog.Event` object,
 which enables us to chain other methods to add more data to the log.
 
 So we can take advantage of this by splitting the `log.Info()` call and
-store its result in a logger object.
+store its result in a `logger` object.
 
 ```go
 logger := log.Info()
 ```
 
-Then, if the error is not `nil`, we wil change logger to `log.Error()` 
+Then, if the error is not `nil`, we wil change `logger` to `log.Error()` 
 instead.
 
 ```go
@@ -577,7 +577,7 @@ Now, if we resend the Login request with a nonexistent user,
 ![](../images/part52/13.png)
 
 we will see that the log level has changed to `error`, and we have 1 more 
-error field to tell us about its detailed reason.
+`error` field to tell us about its detailed reason.
 
 ![](../images/part52/14.png)
 
@@ -594,7 +594,7 @@ The request is successful,
 ![](../images/part52/16.png)
 
 and in the log, we can see that the log level is `info`, and there's no
-error field in the log this time.
+`error` field in the log this time.
 
 So everything is working perfectly! Well, almost everything, because there
 are still some unstructured logs at the top,
@@ -692,7 +692,7 @@ go run main.go
 
 Voilà, we've got some JSON logs as expected.
 
-But some of the logs still have Debug level, so let's go back to the
+But some of the logs still have "debug" level, so let's go back to the
 code and change all occurrences of this `log.Printf()` statement to 
 `log.Info().Msgf()`.
 
@@ -831,7 +831,7 @@ go run main.go
 ```
 
 The logs are printed in the pretty format as expected, because we're setting
-ENVIRONMENT to "development".
+`ENVIRONMENT` to "development".
 
 If I change its value to "production", and restart the server, we will 
 get some JSON-format logs instead.
