@@ -14,7 +14,7 @@ go run main.go
 4:14PM INF start HTTP gateway server at [::]:8080
 ```
 
-and open Postman to send this login user RPC,
+and open Postman to send this `LoginUser` RPC,
 
 ![](../images/part53/1.png)
 
@@ -45,7 +45,7 @@ interceptor. That's why the gRPC logger function didn't get executed. So,
 in order to have logs for HTTP requests, we have to write a separate HTTP
 logger middleware function and add it to the gRPC gateway server.
 
-## Writing a separate HTTP logger
+## Writing a separate HTTP logger middleware
 
 ```go
 func HttpLogger() {
@@ -95,7 +95,7 @@ func HttpLogger(handler http.Handler) http.Handler {
 }
 ```
 
-As you can see, it takes an HTTP response writer and an HTTP request
+As you can see, it takes an HTTP `ResponseWriter` and an HTTP `Request`
 object as input.
 
 Here, we're just doing a type conversion from an anonymous function to 
@@ -227,7 +227,7 @@ func runGatewayServer(config util.Config, store db.Store) {
 
 And that's basically it!
 
-we've added the HTTP logger middleware to the gateway server.
+We've added the HTTP logger middleware to the gateway server.
 
 Now let's open terminal and restart the server.
 
@@ -271,14 +271,14 @@ after the request is processed.
 
 We only have the `ResponseWriter`, which is, in fact, just an interface.
 
-So how can we track the status of the request? Well, the fact that 
-response writer is an interface can actually help us.
+So how can we track the status of the request? Well, the fact that
+`ResponseWriter` is an interface can actually help us.
 
 As you can see,
 
 ![](../images/part53/5.png)
 
-it was methods to write the response body and response header, which will
+it has methods to write the response body and response header, which will
 be called by the `handler` function.
 
 So if we provide a custom implementation of the interface, we can easily 
@@ -318,7 +318,7 @@ func (rec *ResponseRecorder) WriteHeader(statusCode int) {
 }
 ```
 
-So now, we can easily save the input status code to the response recorder
+So now, we can easily save the input status code to the `ResponseRecorder`
 with this statement. Then, one important thing we must do is, we have
 to call the original response writer's `WriteHeader` function so that
 it can write the header of the response for us.
@@ -330,7 +330,7 @@ func (rec *ResponseRecorder) WriteHeader(statusCode int) {
 }
 ```
 
-OK, now we should use this new recorder when serving the request.
+OK, now we should use this new `ResponseRecorder` when serving the request.
 
 Here, I'm gonna create a new `ResponseRecorder` object, with the 
 original `ResponseWriter` set to the input `res` parameter. And we can
@@ -352,8 +352,8 @@ func HttpLogger(handler http.Handler) http.Handler {
 This status code field will be updated to the correct value when the
 `WriteHeader()` method is called by the handler.
 
-Alright, the only thing left is replacing this response writer `res`
-with the new recorder in the `ServeHTTP` function call.
+Alright, the only thing left is replacing this `ResponseWriter` `res`
+with the new `ResponseRecorder` in the `ServeHTTP` function call.
 
 ```go
 handler.ServeHTTP(rec, req)
@@ -420,7 +420,7 @@ Can we do that? Yes, we can!
 It's pretty similar to what we've done in the gRPC logger. However, since
 we don't have the error returned in the HTTP logger, we have to base on
 the response status code. So if the recorded status code is not 
-`StatusOK`, we will change the logger to `log.Error()`.
+`http.StatusOK`, we will change the logger to `log.Error()`.
 
 ```go
 func HttpLogger(handler http.Handler) http.Handler {
@@ -462,7 +462,7 @@ type ResponseWriter interface {
 since this method will be called by the handler whenever it wants
 to set the response body.
 
-This time, we will save the input `body` argument to the recorder's
+This time, we will save the input `body` argument to the `ResponseRecorder`
 `Body` field. And finally call the original `ResponseWriter.Write(body)`
 method, and return its output result.
 
