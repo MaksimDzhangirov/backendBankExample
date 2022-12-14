@@ -1,6 +1,6 @@
 # Проверка gRPC параметров и отправка человека/машинно понятного ответа от сервера
 
-[Original video](https://www.youtube.com/watch?v=CxZ9hMtmZtc)
+[Оригинал](https://www.youtube.com/watch?v=CxZ9hMtmZtc)
 
 Привет, ребята, рад вас снова видеть на мастер-классе по бэкенду!
 
