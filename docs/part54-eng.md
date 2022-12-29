@@ -20,6 +20,8 @@ something we just want to schedule to be executed in the future.
 Whatever the reason is, one thing for sure is, we will need a mechanism to
 process some kind of task asynchronously.
 
+## Use Go routines
+
 One possible solution is simply using Go routines to process the task in
 the background. 
 
@@ -29,8 +31,10 @@ It's very easy to implement, but the drawback of this strategy is, the
 tasks basically live inside the process's memory, so if the server suddenly
 goes down, then all of the unprocessed tasks will be lost.
 
+## Use message broker & background workers
+
 A better design would be sending the tasks to a queue of a message broker,
-then having a set of background workers keep polling thw queue to get the
+then having a set of background workers keep polling the queue to get the
 tasks and process them. One very popular and efficient message broker is 
 Redis. Redis stores its data both in memory and persistent storage, and
 when running on production with Redis sentinel or Redis cluster, we can be
@@ -55,7 +59,7 @@ workers to pick up the task from the queue and process it.
 Alright, let's start!
 
 In the `gapi` package, let's open the `rpc_create_user.go` file. Here we 
-can find the implementation of the CreateUser API that we've written in 
+can find the implementation of the `CreateUser` API that we've written in 
 lecture 42. And in the request, there's a field to allow user to specify 
 their email address. So after calling the store to create a new user record
 in the DB, we will send a verification email to the user here.
@@ -134,7 +138,7 @@ type TaskDistributor interface {
 }
 ```
 
-Then we will write a separate RedisTaskDistributor struct that implements 
+Then we will write a separate `RedisTaskDistributor` struct that implements 
 the interface.
 
 ```go
@@ -247,7 +251,7 @@ type TaskDistributor interface {
 ```
 
 As soon as we define this new method of the interface, you can see some
-red lines in the return `RedisTaskDistributor` statement.
+red lines in the `return RedisTaskDistributor` statement.
 
 ![](../images/part54/7.png)
 
@@ -365,7 +369,7 @@ to implement the task processor.
 
 It will pick up the tasks from the Redis queue and process them.
 
-In `processor.go` file, I'm gonna define a TaskProcessor interface. Then 
+In `processor.go` file, I'm gonna define a `TaskProcessor` interface. Then 
 the `RedisTaskProcessor` struct will implement that interface, just like 
 how we did for the task distributor. But this time, the `RedisTaskProcessor`
 must contain an `asynq.Server` object as one of its field. And when 
@@ -385,7 +389,7 @@ type RedisTaskProcessor struct {
 Now let's write a function to create a new `RedisTaskProcessor`, which 
 takes 2 input arguments: the first one is a Redis client option to connect
 to Redis, and the second one is a `db.Store` interface. This function will
-return a TaskProcessor interface, so we will have free type checking from 
+return a `TaskProcessor` interface, so we will have free type checking from 
 the Go's compiler.
 
 ```go
@@ -462,8 +466,8 @@ simple by leaving this config empty, which means, we're gonna use asynq's
 predefined default configurations.
 
 OK, let's return a pointer to a new `RedisTaskProcessor` object here, 
-whose server field is the server object we've just created, and store 
-field is the input store parameter of this function.
+whose `server` field is the `server` object we've just created, and `store` 
+field is the input `store` parameter of this function.
 
 ```go
 func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) TaskProcessor {
@@ -487,10 +491,12 @@ context, and an `asynq.Task` object as input, and it must return an error
 object as output.
 
 ```go
-
+type TaskProcessor interface {
+	ProcessTaskSendVerifyEmail(ctx context.Context, task *asynq.Task) error
+}
 ```
 
-Alright, now there's some red lines under the return `RedisTaskProcessor`
+Alright, now there's some red lines under the `return RedisTaskProcessor`
 statement, 
 
 ![](../images/part54/10.png)
@@ -513,7 +519,7 @@ distribute and process the task are in the same place.
 OK, this time, the function receiver we must add should be of type
 `RedisTaskProcessor`. `Asynq` has already taken care of the core part,
 which is pulling the task from Redis, and feed it to the background worker
-to process it via the task parameter of this handler function.
+to process it via the `task` parameter of this handler function.
 
 ```go
 func (processor RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Context, task *asynq.Task) error {
@@ -524,7 +530,7 @@ func (processor RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Conte
 So now, we need to parse the task to get its payload. I'm gonna define a 
 variable to store this `PayloadSendVerifyEmail`. We will call the 
 `json.Unmarshal()` function with input `task.Payload()`, and the address
-of the payload variable we declared above. This function might return an
+of the `payload` variable we declared above. This function might return an
 error, so if error is not `nil`, we simply return an error with this 
 message: "failed to unmarshal payload". If task payload is not unmarshallable
 there's no point of retrying it, and we can tell `asynq` about that by
@@ -643,7 +649,7 @@ func (processor *RedisTaskProcessor) Start() error {
 
 Sometimes I forgot to do this, and I just waited but the task never ran.
 Alright, the final step is to call `processor.server.Start()`, then pass in
-the mux object as its only input argument. And return the output error to 
+the `mux` object as its only input argument. And return the output error to 
 the caller of this function.
 
 ```go
