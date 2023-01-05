@@ -23,7 +23,7 @@ Redis image with more than 1 billion downloads.
 
 At the time I record this video, its latest version is 7, so I'm gonna use
 the `7-alpine` image. Let's open the `Makefile` of the `Simple Bank` 
-project, and add a new Redis command at the end. Then let's add this 
+project, and add a new "redis" command at the end. Then let's add this 
 statement to run a new Redis container:
 
 ```makefile
@@ -57,7 +57,7 @@ redis:
 	docker run --name redis -p 6379:6379 -d redis:7-alpine
 ```
 
-Now. I'm gonna add this new Redis command to the PHONY list
+Now, I'm gonna add this new "redis" command to the PHONY list
 
 ```makefile
 .PHONY: postgres createdb dropdb migrateup migratedown migrateup1 migratedown1 db_docs db_schema sqlc test server mock proto evans redis
@@ -143,7 +143,7 @@ type Config struct {
 OK, next, let's open the `main.go` file and add some code to connect to
 Redis.
 
-In the main function, right before running the server, I'm gonna define a 
+In the `main` function, right before running the server, I'm gonna define a 
 new Redis option variable with the type `asynq.RedisClientOpt{}`. This 
 object allows us to set up many different parameters to communicate with 
 the Redis server.
@@ -292,7 +292,7 @@ open the `server.go` file inside the `gapi` package. I'm gonna add a new
 field called `taskDistributor` to the `Server` struct.
 
 ```go
-// Server обслуживает gRPC запросы нашего банковского сервиса.
+// Server serves gRPC requests for our banking service.
 type Server struct {
 	pb.UnimplementedSimpleBankServer
 	config          util.Config
@@ -302,7 +302,7 @@ type Server struct {
 }
 ```
 
-We also need to add taskDistributor as 1 of the input arguments of the
+We also need to add `taskDistributor` as 1 of the input arguments of the
 `NewServer()` function,
 
 ```go
@@ -377,7 +377,7 @@ For now let's go with the default options. This call
 server.taskDistributor.DistributeTaskSendVerifyEmail(ctx, taskPayload)
 ```
 
-might return an error, so I'm going to store it in the error variable
+might return an error, so I'm going to store it in the `err` variable
 and check if error is `nil` or not. If it is not `nil` we'll return an 
 internal error to the client with a message saying "failed to distribute
 task to send verify email".
@@ -394,13 +394,13 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 ```
 
 Now I must emphasize that what we just did is not the best. What if the 
-code to create a new user in the DB is successful, but the code to send 
-tasks to Redis fails? In that case the clients will receive a `nil` to 
-know error, but he cannot retry the call, because it will create a duplicate
+code to create a new user in the DB is successful, but the call to send 
+tasks to Redis fails? In that case the clients will receive an internal 
+error, but he cannot retry the call, because it will create a duplicate
 record of the user with the same username. So the right way to do it is:
 we have to create user and send tasks to Redis in one single DB 
 transaction. That way if we fail to send tasks the transaction will be
-rollback and the clients can retry later. But I leave this to implement in
+rolled back and the client can retry later. But I'll leave this to implement in
 the next video.
 
 ```go
@@ -419,7 +419,7 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 ```
 
 For now let's go with this simple implementation first, although it's not
-perfect. Alright it's time to go back to the `main.go` file and fix some
+perfect. Alright, it's time to go back to the `main.go` file and fix some
 errors that just appeared because of the changes we made to the `Server`
 struct.
 
@@ -432,7 +432,7 @@ func runGrpcServer(config util.Config, store db.Store) {
 }
 ```
 
-we are calling `gapi.NewServer()`, but now it requires one more argument:
+we're calling `gapi.NewServer()`, but now it requires one more argument:
 the `taskDistributor`. So I'm gonna copy this 
 `taskDistributor worker.TaskDistributor` and add it to the function
 signature. Then we can add the `taskDistributor` to this `NewServer()`
@@ -456,7 +456,7 @@ func runGatewayServer(config util.Config, store db.Store, taskDistributor worker
 }
 ```
 
-OK, next in the `main()` function we must add this `taskDistributor` object
+OK, next, in the `main()` function we must add this `taskDistributor` object
 to the two function calls that run gRPC server and gateway server. And 
 that's all for the task distribution part.
 
@@ -470,7 +470,7 @@ func main() {
 }
 ```
 
-If we only do that then the task will only be sent to a Redis queue, but
+If we only do that, then the task will only be sent to a Redis queue, but
 there's no one picking them up for processing yet.
 
 Therefore, the last step we must do is to run the task processor. I'm going
@@ -478,7 +478,7 @@ write a separate function for this purpose.
 
 This function will take two input arguments: a Redis option of type
 `asynq.RedisClientOpt` to know how to connect to Redis and a store of
-type db.Store to be able to talk to the database.
+type `db.Store` to be able to talk to the database.
 
 ```go
 func runTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) {
@@ -505,7 +505,7 @@ func runTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) {
 }
 ```
 
-Then let's go `taskProcessor.start()` and save its output error to this
+Then, let's call `taskProcessor.start()` and save its output error to this
 variable.
 
 ```go
@@ -516,7 +516,7 @@ func runTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) {
 }
 ```
 
-If error is not `nil` we'll write a fatal log with the original
+If error is not `nil`, we'll write a fatal log with the original
 error attached and a message saying "failed to start task processor".
 
 ```go
@@ -532,10 +532,10 @@ func runTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) {
 OK, the function to run task processor is now completed.
 
 Let's go back to the `main` function and use it. We will have to call 
-`runTaskProcessor` in a separate goroutine because when the processor 
+`runTaskProcessor` in a separate go routine because when the processor 
 starts, the `asynq` server will block and keep pulling Redis for new tasks. 
 As I said in the previous lecture its design is pretty similar to that of 
-an HTTP web server. So it blocks just like the HTTP server blocks, while 
+an HTTP webserver. So it blocks, just like the HTTP server blocks, while 
 waiting for requests from the client.
 
 ```go
@@ -551,7 +551,7 @@ func main() {
 ```
 
 Alright, now both the task distributor and task processor are integrated
-into a web server.
+into our web server.
 
 It's time to start the server and test them out.
 
@@ -569,7 +569,7 @@ asynq: pid=21501 2022/11/11 17:23:20.966246 INFO: Starting processing
 
 in the terminal.
 
-As you can see the server is up and running and there's a log to tell us
+As you can see the server is up and running, and there's a log to tell us
 that the task processor has started.
 
 I'm gonna open Postman and send this `CreateUser` request.
@@ -578,7 +578,7 @@ I'm gonna open Postman and send this `CreateUser` request.
 
 Oops, we've got an error "username already exists". OK, so let's try 
 another username "alice1" and let's change the email to "alice1@email.com"
-as well. Then I'm gonna to send the request.
+as well. Then I'm gonna send the request.
 
 ![](../images/part55/4.png)
 
@@ -598,9 +598,9 @@ see another log saying that the task was successfully processed here.
 6:23PM INF processed task email=alice1@email.com payload="{\"username\":\"alice1\"}" type=task:send_verify_email
 ```
 
-It's showing the email address here exactly as we specified in the request.
-The task is processed immediately because we didn't set any delay option,
-but if you want we can easily do that with an `asynq` option. We can also 
+It's showing the email address here, exactly as we specified in the request.
+The task is processed immediately because we didn't set any delay option.
+But if you want, we can easily do that with an `asynq` option. We can also 
 change the `max_retry` parameter or send a task to a specific queue instead
 of the default one as well.
 
@@ -624,13 +624,13 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 }
 ```
 
-First let's add an `asynq.MaxRetry()` option and set it to 10. This means 
-we only allow the task to be retried at most 10 times if it fails. Then 
+First, let's add an `asynq.MaxRetry()` option and set it to 10. This means 
+we only allow the task to be retried at most 10 times if it fails. Then, 
 let's add `asynq.ProcessIn()` option and set it to 10 seconds. This will 
 add some kind of delay to the task, so that it will only be picked up by 
 the processor after 10 seconds. And if you have multiple tasks with 
-different priority levels you can use `asynq.Queue` option to send them to 
-different queues. For example, here I'm sending this task to a `critical`
+different priority levels, you can use `asynq.Queue` option to send them to 
+different queues. For example, here, I'm sending this task to a `critical`
 queue.
 
 ```go
@@ -650,7 +650,7 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 }
 ```
 
-OK, so now we can add the option slice to the end of the 
+OK, so now, we can add the option slice to the end of the 
 `DistributeTaskSendVerifyEmail` call.
 
 ```go
@@ -671,7 +671,7 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 }
 ```
 
-Then let's go back to the terminal and restart the server.
+Then, let's go back to the terminal and restart the server.
 
 ```shell
 make server
@@ -683,12 +683,12 @@ asynq: pid=22034 2022/11/11 17:26:59.475563 INFO: Starting processing
 6:26PM INF start HTTP gateway server at [::]:8080
 ```
 
-And in Postman I'm gonna change the username and email to "alice2" and 
+And in Postman, I'm gonna change the username and email to "alice2" and 
 resend the request.
 
 ![](../images/part55/5.png)
 
-It's successful but this time in the log there's something different.
+It's successful. But this time, in the log, there's something different.
 
 ```shell
 4:42PM INF enqueued task max_retry=10 payload="{\"username\":\"alice2\"}" queue=critical type=task:send_verify_email
@@ -697,14 +697,14 @@ It's successful but this time in the log there's something different.
 
 The `max_retry` value has been changed to 10 instead of 25 and the queue 
 name is now `critical` instead of `default` as before. There's a log
-when the task is enqueued but there's no log when it is processed. 
+when the task is enqueued, but there's no log when it is processed. 
 That's because we have a 10-second delay. However, even if we wait for
-more than 10 seconds it's still not running. The reason is we haven't
+more than 10 seconds, it's still not running. The reason is we haven't
 told the task processor to pick up the task from the `critical` queue yet.
 So it only looks for tasks in the `default` queue.
 
-So let's go back to the `processor.go` file and fix it. Here when creating
-a new `asynq` server
+So let's go back to the `processor.go` file and fix this. Here, when 
+creating a new `asynq` server,
 
 ```go
 func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) TaskProcessor {
@@ -720,7 +720,7 @@ func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) TaskPr
 }
 ```
 
-we can pass in some configurations. In this case we would want to specify 
+we can pass in some configurations. In this case, we would want to specify 
 the `Queues` map to tell `asynq` about the queue names and their 
 corresponding priority values. You can see an example of it in this 
 documentation comment.
@@ -749,15 +749,15 @@ documentation comment.
 Queues map[string]int
 ```
 
-Alright, I'm gonna copy this
+Alright, I'm gonna copy this,
 
 ```go
 Queues map[string]int
 ```
 
-and paste it into our code. Add a column here and a pair of curly brackets
-to make it an empty map. Then at the top of the file I'm gonna add two
-constants for the queue names. First the `critical` queue and second the
+paste it into our code, add a colon here, and a pair of curly brackets
+to make it an empty map. Then, at the top of the file, I'm gonna add two
+constants for the queue names. First, the `critical` queue, and second, the
 `default` queue.
 
 ```go
@@ -772,8 +772,8 @@ type TaskProcessor interface {
 }
 ```
 
-Then in the map object I'm gonna set the priority of the `critical` queue
-to 10 and that of the `default` queue to 5.
+Then, in the map object, I'm gonna set the priority of the `critical` queue
+to 10, and that of the `default` queue to 5.
 
 ```go
 func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) TaskProcessor {
@@ -794,8 +794,8 @@ func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) TaskPr
 }
 ```
 
-Then in the handler function of the `CreateUser` RPC I'm gonna replace this 
-string `"critical` with `worker.QueueCritical` and that's it.
+Then, in the handler function of the `CreateUser` RPC, I'm gonna replace this 
+string `critical` with `worker.QueueCritical` and that's it.
 
 ```go
 func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
@@ -814,7 +814,7 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 }
 ```
 
-Let's save the code and go back to the terminal to restart the server.
+Let's save the code, and go back to the terminal to restart the server.
 
 ```shell
 make server
@@ -826,7 +826,7 @@ asynq: pid=22360 2022/11/21 17:29:40.952616 INFO: Starting processing
 6:29PM INF start HTTP gateway server at [::]:8080
 ```
 
-As soon as the server is started we will see that the task send email to 
+As soon as the server is started, we will see that the task send email to 
 "alice2" has been processed.
 
 ```shell
@@ -834,7 +834,7 @@ As soon as the server is started we will see that the task send email to
 ```
 
 So that's the power of using Redis as a task queue. Even when the server is
-restarted all the existing tasks are still safely stored in the queue. Now
+restarted, all the existing tasks are still safely stored in the queue. Now,
 before we finish, let's open Postman and send another request to create a
 new user "alice3".
 
@@ -854,11 +854,11 @@ after about 10 seconds it will be processed by the worker.
 6:30PM INF processed task email=alice3@email.com payload="{\"username\":\"alice3\"}" type=task:send_verify_email
 ```
 
-And that wraps up today's lecture about integrating `asynq` workers with 
+And that wraps up today's lecture about integrating async workers with 
 the web server.
 
 I hope it has interesting and useful for you. In the next video we will
 learn how to make it even more robust by using a DB transaction when
 pushing the task to Redis.
 
-Thanks a lot for watching, happy learning and see you in the next lecture.
+Thanks a lot for watching! Happy learning, and see you in the next lecture.
