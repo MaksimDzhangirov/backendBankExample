@@ -5,10 +5,13 @@
 Hello everyone, welcome to the backend master class. In the previous lecture,
 we've integrated an async worker into our web server's API to send a 
 verification email after a new user is created. However, as I said last 
-time, the way we're doing it right now is not the best. We're trying to 
-send a task to a Redis queue after the query to create a new user record
-in the database is completed. But, what will happen if we cannot send the
-task to Redis? Or in other words, what if this statement
+time, the way we're doing it right now is not the best.
+
+## Why current solution is not the best
+
+We're trying to send a task to a Redis queue after the query to create a new 
+user record in the database is completed. But, what will happen if we cannot 
+send the task to Redis? Or in other words, what if this statement
 
 ```go
 err = server.taskDistributor.DistributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
@@ -36,7 +39,7 @@ What I'm gonna do is, on a new terminal, run
 docker stop redis
 ```
 
-to stop the redis server. Then let's open Postman and try to send this
+to stop the Redis server. Then let's open Postman and try to send this
 `CreateUser` request with a new username and email: "alice5".
 
 ![](../images/part56/1.png)
@@ -75,6 +78,8 @@ will be rolled back and the user won't exist in the database, which means,
 the client can safely retry the request without any issues.
 
 Alright, let me show you how to do that!
+
+## Send the task to Redis in DB transaction
 
 In the `db/sqlc` folder, I'm gonna create a new file called 
 `tx_create_user.go`. We will implement the transaction to create a new
@@ -198,7 +203,7 @@ type CreateUserTxParams struct {
 The idea is, this function will be executed after the user is inserted, 
 inside the same transaction. And its output error will be used to decide 
 whether to commit or rollback the transaction. Then from outside, we will 
-use the callback function to send the async task Redis.
+use the callback function to send the async task to Redis.
 
 OK, let's go back to the transaction, and fill in the fields for the 
 `CreateUserTxResult`. In this case, the transaction will have only 1 single
@@ -211,14 +216,14 @@ type CreateUserTxResult struct {
 ```
 
 Alright, next, let's implement the body of the transaction. I'm gonna use
-the query argument of this function
+the `q` argument of this function
 
 ```go
 err := store.execTx(ctx, func(q *Queries) error {
-		var err error
+    var err error
 
-		return err
-	})
+    return err
+})
 ```
 
 to call `q.CreateUser()` with the input context, and the `CreateUserParams`
@@ -285,7 +290,7 @@ And that's it! The `CreateUser` transaction is completed.
 
 Now we can go back to the `CreateUser` RPC to use it.
 
-However, we will need to add the new transaction to the Store interface 
+However, we will need to add the new transaction to the `Store` interface 
 first, because we're using this interface as a layer of abstraction, so 
 it can be easily mocked when we want to unit test the APIs. All we have
 to do is to copy the function signature of the `CreateUserTx` and paste
@@ -491,7 +496,7 @@ Before we finish, you might notice that there are several errors in some
 test files of the `api` package. And if we look into this error, it's 
 saying: "MockStore doesn't implement the db.Store interface (missing 
 method CreateUserTx)". That's because we have added a new function 
-`CreateUserTx` to the Store interface, but we haven't regenerated the 
+`CreateUserTx` to the `Store` interface, but we haven't regenerated the 
 mocking codes for that function yet. So to fix this, all we have to do is
 regenerating the `MockStore`.
 

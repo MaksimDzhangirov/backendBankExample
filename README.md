@@ -181,3 +181,16 @@
 [53. How to write HTTP logger middleware in Go](docs/part53-eng.md)
 
 [53. Как написать HTTP middleware для логирования в Go](docs/part53-rus.md)
+
+[54. Implement background worker in Go with Redis and asynq](docs/part54-eng.md)
+
+[54. Реализация фонового воркера в in Go с помощью Redis и asynq](docs/part54-rus.md)
+
+[55. Integrate async worker to Go web server](docs/part55-eng.md)
+
+[55. Интегрируем асинхронный воркер с веб-сервером Go](docs/part55-eng.md)
+
+[56. Why you should send async tasks to Redis within a DB transaction](docs/part56-eng.md)
+
+[56. Почему вы должны отправлять асинхронные задачи в Redis в рамках транзакции БД](docs/part56-rus.md)
+
