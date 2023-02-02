@@ -36,7 +36,7 @@ to stop the database container.
 Now, as the DB is stopped, we expect to see some error logs here, because
 the worker couldn't be able to query the user information.
 
-As you can see in the code, we're looking for the user by username in
+As you can see in the code, we're looking for the user by `username` in
 the database,
 
 ```go
@@ -87,7 +87,7 @@ ErrorHandler ErrorHandler
 ```
 
 This function will be executed whenever there's an error in the task.
-You can see an example hare.
+You can see an example here.
 
 ```go
 // ErrorHandler handles errors returned by the task handler.
@@ -166,7 +166,7 @@ Let's call `log.Error().Msg()` and write a simple message here, such as:
 "process task failed". I'm gonna add the original error here to let us
 know why it failed. We should also print out the type of the task, and
 maybe the task payload as well, to make it easier to debug if necessary.
-All of these infos are provided in the task parameter of this function.
+All of these infos are provided in the `task` parameter of this function.
 
 ```go
 func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) TaskProcessor {
@@ -234,7 +234,7 @@ If I go back to the previous terminal tab, we can see that the task to send
 email to "alice7" has been processed.
 
 ```shell
-9:32PM INF processed task email=alice7@email.com payload="{\"username\":\"alice7\"}" type=task:send_verify_email
+9:39PM INF processed task email=alice7@email.com payload="{\"username\":\"alice7\"}" type=task:send_verify_email
 ```
 
 So I think it managed to run before I stop the Postgres server. Then, we 
@@ -316,11 +316,11 @@ algorithm to calculate the delay.
 
 Alright, so that's how we print out error logs of the async tasks. You 
 can also change the code in the error handler function to send 
-notification on your email, slack, or whatever channel you want.
+notification on your email, Slack, or whatever channel you want.
 
 Now I'm gonna show you one more thing.
 
-## Fix `asynq` logging format for some messages 
+## Fixing `asynq` logging format for some messages 
 
 If you look at the logs of the server, you will notice that some logs
 from `asynq` is not well formatted.
@@ -383,7 +383,7 @@ level that should be written.
 LogLevel LogLevel
 ```
 
-Now, if we open  the definition of this `Logger`,
+Now, if we open the definition of this `Logger`,
 
 ```go
 // Logger supports logging at various log levels.
@@ -413,7 +413,7 @@ to the 5 different levels of log: "Debug", "Info", "Warn", "Error" and
 So to write a custom logger, we will have to implement a struct with 
 all of these functions.
 
-So let's go back to our code, and in the worker package, I'm gonna create
+So let's go back to our code, and in the `worker` package, I'm gonna create
 a new file called `logger.go`. Then let's paste in all 5 functions that
 I've copied from the `Logger` interface before. Next, I'm gonna define
 a new type `Logger` struct and a function to create a new `Logger` object.
@@ -444,10 +444,10 @@ Error(args ...interface{})
 Fatal(args ...interface{})
 ```
 
-Now, what we need to do is to add the logger receiver in front of these 5
+Now, what we need to do is to add the `logger` receiver in front of these 5
 functions to turn them all into methods of the `Logger` struct. That's how
 we make our custom `Logger` struct to implement all required functions
-of the `asynq` Logger interface.
+of the `asynq.Logger` interface.
 
 ```go
 // Debug logs a message at Debug level.
@@ -574,7 +574,7 @@ func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) TaskPr
 Now let's go back to the terminal and give it some tests. I'm gonna 
 restart the server.
 
-```go
+```shell
 make server
 go run main.go
 9:47PM INF db migrated successfully
@@ -617,7 +617,7 @@ same format as well. I'll leave it as an exercise for you to do. You can
 take a look at [my code on GitHub](https://github.com/techschool/simplebank/commit/663ff51ac4875e1b87f7c18eae101dcd7129b2a2) to
 see how I do it.
 
-And don't forget, you can always join Tech School's Discord server if 
+And don't forget, you can always join [Tech School's Discord server]((https://bit.ly/techschooldc)) if 
 you have any questions or things that you want to discuss with me and
 other students.
 
