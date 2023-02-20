@@ -205,8 +205,8 @@ And go back to Postman to send a create-new-user request: "alice11".
 
 ![](../images/part58/2.png)
 
-It will take about 2 seconds to complete because of the sleep statement. But
-now, if we look at the logs,
+It will take about 2 seconds to complete because of the `Sleep()` 
+statement. But now, if we look at the logs,
 
 ```shell
 11:13AM INF enqueued task max_retry=10 payload="{\"username\":\"alice11\"}" queue=critical type=task:send_verify_email
