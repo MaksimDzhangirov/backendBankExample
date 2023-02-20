@@ -258,7 +258,7 @@ postgres12
 
 ![](../images/part57/2.png)
 
-ОК, запрос успешно выполнен, поэтому я остановлю Postgres сервер . 
+ОК, запрос успешно выполнен, поэтому я остановлю Postgres сервер 
 
 ```shell
 docker stop postgres12
