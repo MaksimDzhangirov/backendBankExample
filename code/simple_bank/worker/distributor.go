@@ -6,8 +6,6 @@ import (
 	"github.com/hibiken/asynq"
 )
 
-const TaskSendVerifyEmail = "task:send_verify_email"
-
 type TaskDistributor interface {
 	DistributeTaskSendVerifyEmail(
 		ctx context.Context,

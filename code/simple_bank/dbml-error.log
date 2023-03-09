@@ -1,0 +1,27 @@
+2023-03-06T12:42:29.388Z
+SyntaxError: You have a syntax error at "db.dbml" line 20 column 26. Expected " " or <>, >, - or < but "U" found.
+    at /usr/lib/node_modules/@dbml/cli/lib/cli/utils.js:55:13
+    at Array.forEach (<anonymous>)
+    at generate (/usr/lib/node_modules/@dbml/cli/lib/cli/utils.js:48:14)
+    at exportHandler (/usr/lib/node_modules/@dbml/cli/lib/cli/export.js:41:27)
+    at Object.dbml2sql (/usr/lib/node_modules/@dbml/cli/lib/cli/index.js:27:23)
+    at Object.<anonymous> (/usr/lib/node_modules/@dbml/cli/bin/dbml2sql.js:4:19)
+    at Module._compile (internal/modules/cjs/loader.js:1085:14)
+    at Object.Module._extensions..js (internal/modules/cjs/loader.js:1114:10)
+    at Module.load (internal/modules/cjs/loader.js:950:32)
+    at Function.Module._load (internal/modules/cjs/loader.js:790:12)
+
+ROOT_ERROR:
+SyntaxError: Expected " " or <>, >, - or < but "U" found.
+    at peg$buildStructuredError (/usr/lib/node_modules/@dbml/cli/node_modules/@dbml/core/lib/parse/dbmlParser.js:1169:12)
+    at Object.peg$parse [as parse] (/usr/lib/node_modules/@dbml/cli/node_modules/@dbml/core/lib/parse/dbmlParser.js:8170:11)
+    at Function.parseDBMLToJSON (/usr/lib/node_modules/@dbml/cli/node_modules/@dbml/core/lib/parse/Parser.js:54:37)
+    at Function.parse (/usr/lib/node_modules/@dbml/cli/node_modules/@dbml/core/lib/parse/Parser.js:81:32)
+    at Object._export [as export] (/usr/lib/node_modules/@dbml/cli/node_modules/@dbml/core/lib/export/index.js:15:37)
+    at /usr/lib/node_modules/@dbml/cli/lib/cli/export.js:41:69
+    at /usr/lib/node_modules/@dbml/cli/lib/cli/utils.js:52:23
+    at Array.forEach (<anonymous>)
+    at generate (/usr/lib/node_modules/@dbml/cli/lib/cli/utils.js:48:14)
+    at exportHandler (/usr/lib/node_modules/@dbml/cli/lib/cli/export.js:41:27)
+{"start":{"offset":490,"line":20,"column":26},"end":{"offset":491,"line":20,"column":27}}
+
