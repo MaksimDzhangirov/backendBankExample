@@ -194,3 +194,14 @@
 
 [56. Почему вы должны отправлять асинхронные задачи в Redis в рамках транзакции БД](docs/part56-rus.md)
 
+[57. How to handle errors and print logs for Go Asynq workers](docs/part57-eng.md)
+
+[57. Как обрабатывать ошибки и выводить сообщения в логи для асинхронных Go воркеров](docs/part57-rus.md)
+
+[58. Why a bit of delay can be good for your async tasks](docs/part58-eng.md)
+
+[58. Почему небольшая задержка может быть полезна для ваших асинхронных задач](docs/part58-rus.md)
+
+[59. How to send emails in Go via Gmail](docs/part59-eng.md)
+
+[59. Как отправлять электронные письма в Go с помощью Gmail](docs/part59-rus.md)

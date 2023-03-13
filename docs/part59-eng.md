@@ -81,7 +81,7 @@ github.com/json-iterator/go v1.1.12 // indirect
 
 Next, I'm gonna create a new folder called `mail`. And inside this folder,
 let's add a new file: `sender.go`. We will add some code to send emails
-in this file. As always, to make the code more abstract adn easier to 
+in this file. As always, to make the code more abstract and easier to 
 test, I'm gonna define an `EmailSender` interface.
 
 ```go
@@ -119,10 +119,11 @@ testing purposes.
 
 So I'm gonna define a new type `GmailSender` struct. In this struct, let's
 add a `name` field of type `string`. The recipients will see this name as
-the sender of the email. The next field is the address of the account
-from which we will send emails. And the last field is gonna be the password
-to access that account. Of course, we won't use the real password here,
-but I will show you how to generate an app password later.
+the sender of the email. The next field (`fromEmailAddress`) is the address
+of the account from which we will send emails. And the last field
+(`fromEmailPassword`) is gonna be the password to access that account. Of 
+course, we won't use the real password here, but I will show you how to 
+generate an app password later.
 
 ```go
 type GmailSender struct {
@@ -157,7 +158,7 @@ func NewGmailSender(name string, fromEmailAddress string, fromEmailPassword stri
 }
 ```
 
-Now. we're seeing some red lines here, because the `GmailSender` doesn't
+Now, we're seeing some red lines here, because the `GmailSender` doesn't
 implement the SendEmail method required by `EmailSender` interface yet.
 So I'm gonna copy that method signature, and paste it to the end of this
 file. Then, let's add a `sender` receiver of type `GmailSender` to the
@@ -215,8 +216,8 @@ sender's name and email address. So here I use the `fmt.Sprintf()` function
 to join them together. Next, the `Subject` field will be set to the input
 `subject`. For the content, we normally want to write it in HTML, so here
 I'll set `e.HTML` to the input `content` variable. But we have to do a 
-type conversion here because content is a string, while the HTML field
-is a []byte slice. The next 3 fields: `e.To`, `e.Cc` and `e.Bcc` can be
+type conversion here because content is a string, while the `e.HTML` field
+is a `[]byte` slice. The next 3 fields: `e.To`, `e.Cc` and `e.Bcc` can be
 set to their corresponding input arguments. OK, now we will iterate through
 this attachment list `attachFiles`, and for each file, call `e.AttachFile`
 and pass in its name. This function will return an attachment object and
@@ -358,10 +359,10 @@ variable for the `EMAIL_SENDER_ADDRESS`. I've created a Gmail account
 just for testing, its address is `simplebanktest@gmail.com`. So I'm 
 gonna copy and paste it to our `app.env` file. Now comes the most 
 important value: `EMAIL_SENDER_PASSWORD`. Should we use the real password
-of the simple bank test account here? No. Even if you try to use the real
+of the `simplebanktest` account here? No. Even if you try to use the real
 password here, Gmail won't allow you to authenticate with it. For 
 programmatic access, we will have to generate an app password, which I 
-think is better because we can easily manage it, and revoke access
+think, is better because we can easily manage it, and revoke access
 if necessary. First, we have to open the "Manage your Google Account" 
 page. And open the "Security" tab on the left.
 
@@ -375,7 +376,8 @@ and "GET STARTED" buttons.
 
 Google might ask you to enter your password, then it will ask for a 
 phone number that you want to use. You can choose how to get the 
-verification code. I'm gonna choose text message, and click `Next`.
+verification code (via "Text message" or "Phone call"). I'm gonna choose 
+text message, and click `Next`.
 
 ![](../images/part59/4.png)
 
@@ -389,7 +391,7 @@ If the code is correct, we can click this button
 
 to turn on the 2-step verification.
 
-Now, if we go back to the security page, a new App password button will
+Now, if we go back to the `Security` page, a new `App passwords` button will
 show up in the `Signing in to Google` section.
 
 ![](../images/part59/7.png)
@@ -402,8 +404,8 @@ We don't have any app passwords yet, so let's go ahead to create a new
 one. I'm gonna select the `Mail` app, and in the `Select device` list
 let's choose "Other".
 
-We can give it a name to easily remember. Let's call it Simple Bank 
-Service. The click `Generate`.
+We can give it a name to easily remember. Let's call it `Simple Bank 
+Service`. Then click `Generate`.
 
 ![](../images/part59/9.png)
 
@@ -419,7 +421,7 @@ EMAIL_SENDER_ADDRESS=simplebanktest@gmail.com
 EMAIL_SENDER_PASSWORD=jekfcygyenvzekke
 ```
 
-Once we click `Done` and go back to the security page, we'll see that 
+Once we click `Done` and go back to the `Security` page, we'll see that 
 there's 1 app password available here.
 
 ![](../images/part59/11.png)
@@ -550,7 +552,7 @@ The name of the sender is `Simple Bank`, and its address is
 `simplebanktest@gmail.com`. The receiver's address is indeed 
 `techschool.guru@gmail.com`. Its body contains a big "Hello world"
 message and a link to the Tech School's YouTube page. And finally, 
-the README.md file is presented in the attachment. If we open the 
+the `README.md` file is presented in the attachment. If we open the 
 "Sent" box of the Simple Bank Test account,
 
 ![](../images/part59/15.png)
