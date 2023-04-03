@@ -52,7 +52,7 @@ func TestSendEmailWithGmail(t *testing.T) {
 
 With this change, the `SendEmail` test won't be executed if the `short`
 flag is set. So what we need to do now is: open the Makefile, and add
-the `-short` flag to the test command.
+the `-short` flag to the `test` command.
 
 ```makefile
 ...
@@ -107,7 +107,7 @@ want.
 
 ## Config test flag in VS Code
 
-Just Open the `Settings` page in `Code` menu, and search for `go test
+Just open the `Settings` page in `Code` menu, and search for `go test
 flag`.
 
 ![](../images/part60/7.png)
@@ -121,7 +121,7 @@ This is where you can config the flags you want to pass into the `go test`
 command.
 
 Let's click "Edit in settings.json". It will bring you to the `go.testFlag`
-section. Here I have defined 2 flags for my test command.
+section. Here I have defined 2 flags for my `test` command.
 
 ```json
 {
