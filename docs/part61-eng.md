@@ -33,7 +33,7 @@ First, we need to update the database schema. So I'm gonna open the
 `db.dbml` file inside the `doc` folder. In the definition of the "users"
 table, let's add a new boolean field called "is_email_verified". It will
 tell us whether the email has been verified or not. This field should
-not be null, and its default value should be false.
+not be `null`, and its default value should be `false`.
 
 ```shell
 email varchar [unique, not null]
@@ -50,21 +50,21 @@ store the secret code and all necessary information about the email we send
 to the user. It will have an `id` column of type `bigserial`, which will
 be the primary key of this table. A `username` column of type `varchar`,
 which is a foreign key that references the corresponding column in the
-"users" table. And it should also be not null. There's also a column to 
+"users" table. And it should also be not `null`. There's also a column to 
 keep track of the user's email address. Although it seems to be duplicate
 since the email is already stored in the "users" table, it actually not,
 because we might allow users to change their email address in the future.
 We don't need this unique constraint in this table, because we can send 
 multiple verification emails to the same address for different purposes.
-OK, now comes the most important field: the secret code. Its type should
-be `varchar`, and it should not be null. We also need a boolean field to 
+OK, now comes the most important field: the `secret_code`. Its type should
+be `varchar`, and it should not be `null`. We also need a boolean field to 
 tell whether this secret code has been used or not. For security reasons,
 we don't want a secret code to be reused multiple times. This field should
-not be null, and its default value is false. Nexy, I'm gonna add a 
-`created_at` field to this table. To keep track of the time when this 
-email record is created. And finally, an expired_at field to tell when it
+not be `null`, and its default value is `false`. Next, I'm gonna add a 
+`created_at` field to this table to keep track of the time when this 
+email record is created. And finally, an `expired_at` field to tell when it
 is expired. This is also for security reasons, because we don't want the
-secret code to be valid for too long, which might increase th chance that
+secret code to be valid for too long, which might increase the chance that
 it can be leaked. So I'll set its default value to `now() + interval '15 
 minutes'`. This will make sure that the code will only be valid for 
 15 minutes after creation.
@@ -96,7 +96,7 @@ dbml2sql --postgres -o doc/schema.sql doc/db.dbml
 
 to generate SQL codes for the new schema. Oops, we've got a syntax error
 on line 20, let's go back to the code to fix it. OK, I see! Here, when
-defining the foreign key reference I forgot this > character.
+defining the foreign key reference I forgot this `>` character.
 
 ```
 username varchar [ref: > U.username, not null]
@@ -159,7 +159,7 @@ migrate create -ext sql -dir db/migration -seq <migration_name>
 ```
 
 Since this command will be used a lot in development, I'm gonna add it
-to the Makefile to make it easier to run.
+to the `Makefile` to make it easier to run.
 
 Let's add a new make command called "new_migration" and paste in the
 "migrate create" statement that we've just copied.
@@ -219,7 +219,7 @@ For the new column "is_email_verified", we can also copy its code from
 ```
 
 but we have to manually write the first part of the statement, which is:
-`ALTER TABLE "users" ADD COLUMN`. Then paste in the rest of the column 
+`ALTER TABLE "users" ADD COLUMN `. Then paste in the rest of the column 
 definition.
 
 ```postgresql
@@ -279,7 +279,7 @@ value has been set to `FALSE` for all existing records.
 
 That's exactly what we wanted. So the migration `up` script is working
 well. Now let's try running `make migratedown1` in the terminal to run
-only the last migration `down` scripts.
+only the last migration `down` script.
 
 ```shell
 make migratedown1
@@ -300,7 +300,7 @@ The "is_email_verified" column also disappeared from the "users" table.
 
 ![](../images/part61/9.png)
 
-So the migration down script is working well too. We can now run 
+So the migration `down` script is working well too. We can now run 
 
 ```shell
 make migrateup
@@ -317,10 +317,10 @@ the implementation of our feature.
 
 Alright, now the DB schema is ready.
 
-## Write a query to create a new verify email
+## Write a query to create a new "verify_email" record
 
-Let's go back to the code and write a query to create a new verify email.
-In the `db/query` folder, I'm gonna create a new file called 
+Let's go back to the code and write a query to create a new "verify_email" 
+record. In the `db/query` folder, I'm gonna create a new file called 
 `verify_email.sql`. As we're gonna generate codes with `sqlc`, I will 
 write an instruction comment for it here, in `verify_email.sql`. The
 name of the generated function should be `CreateVerifyEmail` and it should
@@ -388,16 +388,16 @@ make mock
 mockgen -package mockdb -destination db/mock/store.go github.com/techschool/simplebank/db/sqlc Store
 ```
 
-in the terminal to regenerate the MockStore as well.
+in the terminal to regenerate the `MockStore` as well.
 
 After doing so, all the errors will be gone.
 
 Awesome!
 
-## Create a new verify email record in the database
+## Update task processor
 
 Now it's time to get back to the task processor, and use the method we've
-just added to create a new verify email record in the database. I'm gonna
+just added to create a new "verify_email" record in the database. I'm gonna
 call `processor.store.CreateVerifyEmail`, pass in the context and a 
 `db.CreateVerifyEmailParams` object. We will have to provide 3 input 
 fields: the `Username` will be set to `user.Username`, the `Email` will
@@ -442,6 +442,7 @@ func RandomString(n int) string {
 	return sb.String()
 }
 ```
+
 You can always write a different function that's suitable to your system, 
 but make sure the secret code is long enough to avoid brute-force attacks.
 OK, now, this function will return a `verifyEmail` object and an error.
@@ -508,7 +509,7 @@ type EmailSender interface {
 
 for sending emails.
 
-Back to the task processor, we have to add a new mailer argument to 
+Back to the task processor, we have to add a new `mailer` argument to 
 this `NewRedisTaskProcessor` function, and then add it here as well, 
 when initializing the `RedisTaskProcessor`.
 
@@ -555,10 +556,10 @@ to create a new line. Then, let's say "Thank you for registering with us!",
 and a line break. Now comes the most important part of the message. We'll
 provide a link for the user to click on to verify their email address.
 Here I use the `<a href>` tag to specify the verification URL. So we'll
-need to declare this new variable before writing the content. Normally
-it should point to a front-end page, whose responsibility is to parse the
-input argument from the URL, and call the corresponding API on the backend
-side for verification. For this demo, I'll set it to 
+need to declare this new variable `verifyUrl` before writing the content. 
+Normally it should point to a front-end page, whose responsibility is to 
+parse the input argument from the URL, and call the corresponding API on 
+the backend side for verification. For this demo, I'll set it to 
 `http://simple-bank.org` followed by 2 query parameters: the first param 
 is the id of the verification email record, and the second one is the 
 secret code of that email. We can get their values from the `verifyEmail`
@@ -620,14 +621,22 @@ func runTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store) {
 }
 ```
 
-Since we've added a new mailer object to the `NewRedisTaskProcessor()` 
+Since we've added a new `mailer` object to the `NewRedisTaskProcessor()` 
 function, so at the beginning of the `runTaskProcessor()` function, I'm
 gonna call `mail.NewGmailSender()`. It requires 3 input arguments:
 `name`, `fromEmailAddress` and `fromEmailPassword`, which we can get
-from the environment variables via the config object that we updated in 
+from the environment variables via the `config` object that we updated in 
 the previous lecture. So, let's add the `config` object as 1 input 
 argument of this function. And we can pass in its value when we call
 `runTaskProcessor` in the `main()` function.
+
+```go
+func runTaskProcessor(config util.Config, redisOpt asynq.RedisClientOpt, store db.Store) {
+    mailer := mail.NewGmailSender()
+    taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, mailer)
+    ...
+}
+```
 
 ```go
 func main() {
@@ -643,7 +652,7 @@ func main() {
 OK, now with the `config` object, we can get the values of the email 
 sender's name, email sender's address, and email sender's password. 
 They're already provided in the `app.env` file. So we can use them to 
-create a `NewGmailSender` mailer. And use this mailer to create the
+create a `NewGmailSender` `mailer`. And use this mailer to create the
 `RedisTaskProcessor`.
 
 ```go
@@ -656,6 +665,8 @@ func runTaskProcessor(config util.Config, redisOpt asynq.RedisClientOpt, store d
 
 And that's basically it! The send verification email task is now ready to
 be tested.
+
+## Testing our code, using Postman
 
 Let's run 
 
@@ -685,20 +696,20 @@ logs, we will see that a new task to send a verification email has been
 enqueued.
 
 ```shell
-11:53PM INF enqueued task max_retry=10 payload="{\"username\":\"techschool\"}" queue=critical type=task:send_verify_email
-11:53PM INF received an HTTP request duration=101.511666 method=POST path=/v1/create_user protocol=http status_code=200 status_text=OK
+11:53AM INF enqueued task max_retry=10 payload="{\"username\":\"techschool\"}" queue=critical type=task:send_verify_email
+11:53AM INF received an HTTP request duration=101.511666 method=POST path=/v1/create_user protocol=http status_code=200 status_text=OK
 ```
 
 After a few seconds, the task will be processed.
 
 ```shell
-9:39PM INF processed task email=techschool.guru@gmail.com payload="{\"username\":\"techschool\"}" type=task:send_verify_email
+11:53AM INF processed task email=techschool.guru@gmail.com payload="{\"username\":\"techschool\"}" type=task:send_verify_email
 ```
 
 This means that the verification email has been sent to the registered
 email address.
 
-So let's open Tech School's gmail inbox and refresh it.
+So let's open Tech School's Gmail inbox and refresh it.
 
 And voilà, we have a new email here with the title: "Welcome to Simple
 Bank".
@@ -743,7 +754,7 @@ parameters.
 
 ![](../images/part61/14.png)
 
-Also, ib the "users" table, there's a new record for "tech school" user,
+Also, in the "users" table, there's a new record for "tech school" user,
 whose email is not yet verified.
 
 ![](../images/part61/15.png)
