@@ -52,7 +52,7 @@ verifyUrl := fmt.Sprintf("http://localhost:8080/v1/verify_email?email_id=%d&secr
     verifyEmail.ID, verifyEmail.SecretCode)
 ```
 
-since it's referring to the id of the verify-email record in our DB. OK,
+since it's referring to the id of the `verify_email` record in our DB. OK,
 so now, let's start building the API. As we're using gRPC gateway, I'm
 gonna define it in `protobuf`. It's pretty similar to what we did for other
 APIs, so let's duplicate this `rpc_create_user.proto` file and rename
@@ -90,16 +90,16 @@ OK, we can now get rid of the redundant import statement at the top.
 import "user.proto";
 ```
 
-And in the next step, we'll have to add a new rpc in the 
+And in the next step, we'll have to add a new RPC in the 
 `service_simple_bank.proto` file. I'm gonna import the 
 `rpc_verify_email.proto` file, and at the bottom, let's duplicate the
-`LoginUser` rpc, then change its name to `VerifyEmail`, its input to 
+`LoginUser` RPC, then change its name to `VerifyEmail`, its input to 
 `VerifyEmailRequest` and its output to `VerifyEmailResponse`. Now, for 
 the HTTP option `option (google.api.http)`, we'll make it a `GET` 
 request, because when the user clicks on the link we sent, the browser 
 will make a GET request to that link. And so, this path should be updated 
 to `/v1/verify_email`. There's no "body" in a GET request, so let's remove
-it. This grpc gateway option 
+it. This gRPC gateway option 
 `option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation)`
 is for generating the documentation, so let's update the description to:
 "Use this API to verify user's email address" and the summary to: "Verify
@@ -491,7 +491,7 @@ fix this, we'll have to run
 ```shell
 make mock
 mockgen -package mockdb -destination db/mock/store.go github.com/techschool/simplebank/db/sqlc Store
-``````
+```
 
 in the terminal to regenerate the `MockStore`. And everything should be 
 back to normal.
@@ -568,7 +568,7 @@ go run main.go
 ```
 
 in the terminal to start the server and open Postman to send this 
-`create_user` request. It will create a new tech scholl user with this 
+`create_user` request. It will create a new `techschool` user with this 
 `techschool.guru@gmail.com` email address.
 
 ![](../images/part62/2.png)
@@ -587,7 +587,7 @@ after a few seconds, this task will be processed.
 11:24AM INF processed task email=techschool.guru@gmail.com payload="{\"username\":\"techschool\"}" type=task:send_verify_email
 ```
 
-Now, if we look at the Tech School gmail inbox, we will see a new "Welcome 
+Now, if we look at the Tech School Gmail inbox, we will see a new "Welcome 
 to Simple Bank" email.
 
 ![](../images/part62/3.png)
