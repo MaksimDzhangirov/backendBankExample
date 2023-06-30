@@ -549,13 +549,34 @@ method. This slash is the path prefix of all routes in this group. And we call
 `server.tokenMaker` interface to this higher order function that creates the 
 auth middleware, just like what we've done in the unit test. Now for all of 
 the remaining routes, instead of using router, we will use `authRoutes` to add
-them to the group. By doing so, all of the routes in this group will share
-the same auth middleware, that we've just added to the group before. So 
-basically, every request to these routes must go through the auth middleware 
-first. And that's exactly what we want to achieve to authorize the API 
-requests. Now a lot of our API unit tests will fail because of this change.
-For example, if we run the `TestGetAccountAPI`, it will fail because the API
-is now returning `401` instead of `200`.
+them to the group.
+
+```go
+func (server *Server) setupRouter() {
+	router := gin.Default()
+
+	router.POST("/users", server.createUser)
+	router.POST("/users/login", server.loginUser)
+	router.POST("/token/renew_access", server.renewAccessToken)
+
+	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
+	authRoutes.POST("/accounts", server.createAccount)
+	authRoutes.GET("/accounts/:id", server.getAccount)
+	authRoutes.GET("/accounts", server.listAccount)
+
+	authRoutes.POST("/transfers", server.createTransfer)
+
+	server.router = router
+}
+```
+
+By doing so, all of the routes in this group will share the same auth 
+middleware, that we've just added to the group before. So basically, every 
+request to these routes must go through the auth middleware first. And that's
+exactly what we want to achieve to authorize the API requests. Now a lot of 
+our API unit tests will fail because of this change. For example, if we run 
+the `TestGetAccountAPI`, it will fail because the API is now returning 
+`401` instead of `200`.
 
 ![](../images/part22/10.png)
 

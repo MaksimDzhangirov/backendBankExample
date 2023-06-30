@@ -68,7 +68,7 @@ func (server *Server) setupRouter() {
 
 	router.POST("/accounts", server.createAccount)
 	router.GET("/accounts/:id", server.getAccount)
-	router.GET("/accounts", server.listAccount)
+	router.GET("/accounts", server.listAccounts)
 
 	router.POST("/transfers", server.createTransfer)
 

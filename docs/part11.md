@@ -651,7 +651,7 @@ func NewServer(store *db.Store) *Server {
 
     router.POST("/accounts", server.createAccount)
     router.GET("/accounts/:id", server.getAccount)
-    router.GET("/accounts", server.listAccount)
+    router.GET("/accounts", server.listAccounts)
 
     server.router = router
     return server
@@ -659,7 +659,7 @@ func NewServer(store *db.Store) *Server {
 ```
 
 Отлично, давайте откроем файл `account.go`, чтобы реализовать эту функцию 
-`server.listAccount`. Он очень похож на обработчик `server.getAccount`, поэтому я
+`server.listAccounts`. Он очень похож на обработчик `server.getAccount`, поэтому я
 его продублирую. Затем измените название структуры на `listAccountRequest`.
 
 Эта структура должна содержать 2 параметра: `PageID` и `PageSize`. Теперь 
@@ -679,11 +679,11 @@ type listAccountRequest struct {
 большим или слишком маленьким, поэтому я установил для него минимальное 
 значение равное пяти записям, а максимальное значение — десяти записям.
 
-Хорошо, теперь функция-обработчик `server.listAccount` должна быть реализована
+Хорошо, теперь функция-обработчик `server.listAccounts` должна быть реализована
 следующим образом:
 
 ```go
-func (server *Server) listAccount(ctx *gin.Context) {
+func (server *Server) listAccounts(ctx *gin.Context) {
     var req listAccountRequest
     if err := ctx.ShouldBindQuery(&req); err != nil {
         ctx.JSON(http.StatusBadRequest, errorResponse(err))

@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+
 	db "github.com/MaksimDzhangirov/backendBankExample/db/sqlc"
 	"github.com/MaksimDzhangirov/backendBankExample/token"
 	"github.com/MaksimDzhangirov/backendBankExample/util"
@@ -45,11 +46,12 @@ func (server *Server) setupRouter() {
 	router.POST("/users/login", server.loginUser)
 	router.POST("/token/renew_access", server.renewAccessToken)
 
-	router.POST("/accounts", server.createAccount)
-	router.GET("/accounts/:id", server.getAccount)
-	router.GET("/accounts", server.listAccount)
+	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
+	authRoutes.POST("/accounts", server.createAccount)
+	authRoutes.GET("/accounts/:id", server.getAccount)
+	authRoutes.GET("/accounts", server.listAccount)
 
-	router.POST("/transfers", server.createTransfer)
+	authRoutes.POST("/transfers", server.createTransfer)
 
 	server.router = router
 }
