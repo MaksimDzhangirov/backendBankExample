@@ -205,3 +205,27 @@
 [59. How to send emails in Go via Gmail](docs/part59-eng.md)
 
 [59. Как отправлять электронные письма в Go с помощью Gmail](docs/part59-rus.md)
+
+[60. How to skip test in Go and config test flag in VS Code](docs/part60-eng.md)
+
+[60. Как пропустить тест в Go и настроить флаг, отвечающий за выполнение теста в VS Code](docs/part60-rus.md)
+
+[61. Email verification in Go: design DB and send email](docs/part61-eng.md)
+
+[61. Подтверждение адреса электронной почты в Go: создаём таблицы в БД и отправляем соответствующее письмо](docs/part61-rus.md)
+
+[62. Implement email verification API in Go](docs/part62-eng.md)
+
+[62. Реализуем API для подтверждения адреса электронной почты в Go](docs/part62-rus.md)
+
+[63. Unit test gRPC API with mock DB & Redis](docs/part63-eng.md)
+
+[63. Unit-тестирование gRPC API с помощью фиктивной БД и Redis](docs/part63-rus.md)
+
+[64. How to test a gRPC API that requires authentication](docs/part64-eng.md)
+
+[64. ]
+
+[65. Config sqlc version 2 for Go and Postgres](docs/part65-eng.md)
+
+[65. ]
