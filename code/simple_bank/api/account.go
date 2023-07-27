@@ -1,13 +1,13 @@
 package api
 
 import (
-	"database/sql"
 	"errors"
+	"net/http"
+
 	db "github.com/MaksimDzhangirov/backendBankExample/db/sqlc"
 	"github.com/MaksimDzhangirov/backendBankExample/token"
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
-	"net/http"
 )
 
 type createAccountRequest struct {
@@ -57,7 +57,7 @@ func (server *Server) getAccount(ctx *gin.Context) {
 
 	account, err := server.store.GetAccount(ctx, req.ID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, db.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
@@ -90,7 +90,7 @@ func (server *Server) listAccount(ctx *gin.Context) {
 
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 	arg := db.ListAccountsParams{
-		Owner: authPayload.Username,
+		Owner:  authPayload.Username,
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
 	}

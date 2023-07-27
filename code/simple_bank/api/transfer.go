@@ -4,10 +4,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"net/http"
+
 	db "github.com/MaksimDzhangirov/backendBankExample/db/sqlc"
 	"github.com/MaksimDzhangirov/backendBankExample/token"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 type transferRequest struct {
