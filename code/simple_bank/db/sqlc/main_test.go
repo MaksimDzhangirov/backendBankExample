@@ -8,8 +8,6 @@ import (
 
 	"github.com/MaksimDzhangirov/backendBankExample/util"
 	"github.com/jackc/pgx/v5/pgxpool"
-
-	_ "github.com/lib/pq"
 )
 
 var testStore Store
