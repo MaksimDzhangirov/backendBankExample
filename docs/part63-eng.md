@@ -226,7 +226,7 @@ func TestCreateUserAPI(t *testing.T) {
 }
 ```
 
-AS you can see, this test features a custom `gomock.Matcher`, that we've
+As you can see, this test features a custom `gomock.Matcher`, that we've
 written in lecture 18 of the course, in order to correctly compare the input
 arguments of the `CreateUser` function, since the hashed password field
 is a bit tricky to handle. You can rewatch that lecture to understand what
@@ -235,9 +235,9 @@ we're doing here before continue.
 Alright, now let's update the code of this test to make it work with our 
 gRPC server.
 
-First, we have to create a random user with this function. It is written
-in the `api` package, so let's head over there to copy it and paste it
-here, right before the `TestCreateUserAPI` function.
+First, we have to create a random user with this `randomUser()` function. It 
+is written in the `api` package, so let's head over there to copy it and 
+paste it here, right before the `TestCreateUserAPI` function.
 
 ```go
 func randomUser(t *testing.T) (user db.User, password string) {
@@ -278,8 +278,8 @@ testCases := []struct {
 OK, now we have to update the content of this request. It is super easy to
 write codes with gRPC, since everything is strongly typed, so we will
 have the autocomplete feature from Visual Studio Code. We have to change
-this asterisk to ampersand, because we want to obtain the address of this
-request object.
+this asterisk `*pb.CreateUserRequest` to ampersand, because we want to 
+obtain the address of this request object.
 
 ```go
 req: &pb.CreateUserRequest{
@@ -312,8 +312,9 @@ txResult, err := server.store.CreateUserTx(ctx, arg)
 
 The `CreateUser` method only gets called inside that transaction, together
 with the callback function. So here, in `buildStubs` function, I'm 
-gonna change this argument to `db.CreateUserTxParams` and set the 
-`CreateUserParams` as an inner field of it.
+gonna change this argument `arg := db.CreateUserParams` to 
+`db.CreateUserTxParams` and set the `CreateUserParams` as an inner 
+field of it.
 
 ```go
 buildStubs: func(store *mockdb.MockStore) {
@@ -528,8 +529,8 @@ t.Run(tc.name, func(t *testing.T) {
 })
 ```
 
-we created a `gomock` controller, and use it to create a mock store for
-the database. We will then use the mock store to create a test server. This
+we created a `gomock` controller, and use it to create a mock `store` for
+the database. We will then use the mock `store` to create a test server. This
 `newTestServer` function is missing in the `gapi` package. We can find its
 content from the `main_test.go` file in the `api` package.
 
@@ -732,7 +733,7 @@ tc.checkResponse(t, res, err)
 Note that this `t` is different from the global `t`, because it has been
 shadowed by the input argument of this `t.Run` function. So basically,
 it's the `t` object of the sub-test, created by the `Run()` function. This
-way, the check response call for each case will be independent, and not
+way, the `checkResponse` call for each case will be independent, and not
 interfere with each other, when we add more cases in the future.
 
 Alright, the happy case is ready. Let's run it to see what happens!
@@ -862,7 +863,7 @@ func (expected eqCreateUserTxParamsMatcher) Matches(x interface{}) bool {
 First, before converting the params, second, before checking the password,
 third, before comparing the arguments with `DeepEqual`. And I want to add
 1 more log at the end, so let's change this 
-`return reflect.DeepEqual(expected.arg, actualArg)` into an if clause. If
+`return reflect.DeepEqual(expected.arg, actualArg)` into an `if` clause. If
 the arguments are not equal, we return `false`. Else, we print a message
 saying "param matches!", and return `true`.
 
@@ -898,7 +899,7 @@ create user tx {{ohhojh $2a$10$r9mAzKfxXw1lCI19zb.dt07RvIkdeTZKnc8AdMdNqhZJMpb/y
 This time, we can see all the logs up until the `DeepEqual` statement. 
 But there's no log saying "param matches!", so the issue must come from the
 `DeepEqual` comparison of the arguments. But we've already taken care of
-the tricky hashed password, then what makes this deep equal call fail?
+the tricky hashed password, then what makes this `DeepEqual` call fail?
 
 Well, I just remember another tricky field in the `CreateUserTxParams`,
 which is the `AfterCreate` callback function. As I said before, there's
@@ -1072,7 +1073,7 @@ AfterCreate: func(user db.User) error {
 },
 ```
 
-Basically, it should be of type `PayloadSendVerifyEmail`, with the username
+Basically, it should be of type `PayloadSendVerifyEmail`, with the `Username`
 field set to the input `user.Username`.
 
 ```go
@@ -1098,7 +1099,7 @@ buildStubs: func(store *mockdb.MockStore, taskDistributor *mockwk.MockTaskDistri
 ```
 
 So, now, we can expect this distribute function to be called exactly one
-time and it will return an output result of type error. This is a happy case,
+time and it will return an output result of type `error`. This is a happy case,
 so we're going to return a `nil` error here.
 
 ```go
@@ -1360,7 +1361,7 @@ AfterCreate: func(user db.User) error {
 },
 ```
 
-This time, if the test is string enough, it should fail. Let's run it
+This time, if the test is strong enough, it should fail. Let's run it
 to verify!
 
 ```shell
@@ -1484,7 +1485,7 @@ PASS
 ok      github.com/MaksimDzhangirov/backendBankExample/gapi     0.565s
 ```
 
-They all passed! both the "OK" case and the "InternalError" case.
+They all passed! Both the "OK" case and the "InternalError" case.
 
 Awesome!
 
@@ -1497,4 +1498,4 @@ them.
 
 And that brings us to the end today's lecture about writing unit tests for
 gRPC services. I hope it was interesting and useful for you. Thanks a lot
-for watching, Happy learning, and see you in the next lecture!
+for watching, happy learning, and see you in the next lecture!
