@@ -7,6 +7,9 @@ import (
 	"reflect"
 	"testing"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	mockdb "github.com/MaksimDzhangirov/backendBankExample/db/mock"
 	db "github.com/MaksimDzhangirov/backendBankExample/db/sqlc"
 	"github.com/MaksimDzhangirov/backendBankExample/pb"
@@ -15,8 +18,6 @@ import (
 	mockwk "github.com/MaksimDzhangirov/backendBankExample/worker/mock"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type eqCreateUserTxParamsMatcher struct {
@@ -62,6 +63,7 @@ func randomUser(t *testing.T) (user db.User, password string) {
 
 	user = db.User{
 		Username:       util.RandomOwner(),
+		Role:           util.DepositorRole,
 		HashedPassword: hashedPassword,
 		FullName:       util.RandomOwner(),
 		Email:          util.RandomEmail(),

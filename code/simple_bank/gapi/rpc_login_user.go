@@ -4,14 +4,15 @@ import (
 	"context"
 	"errors"
 
-	db "github.com/MaksimDzhangirov/backendBankExample/db/sqlc"
-	"github.com/MaksimDzhangirov/backendBankExample/pb"
-	"github.com/MaksimDzhangirov/backendBankExample/util"
-	"github.com/MaksimDzhangirov/backendBankExample/val"
 	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	db "github.com/MaksimDzhangirov/backendBankExample/db/sqlc"
+	"github.com/MaksimDzhangirov/backendBankExample/pb"
+	"github.com/MaksimDzhangirov/backendBankExample/util"
+	"github.com/MaksimDzhangirov/backendBankExample/val"
 )
 
 func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (*pb.LoginUserResponse, error) {
@@ -35,6 +36,7 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 
 	accessToken, accessPayload, err := server.tokenMaker.CreateToken(
 		user.Username,
+		user.Role,
 		server.config.AccessTokenDuration,
 	)
 	if err != nil {
@@ -43,6 +45,7 @@ func (server *Server) LoginUser(ctx context.Context, req *pb.LoginUserRequest) (
 
 	refreshToken, refreshPayload, err := server.tokenMaker.CreateToken(
 		user.Username,
+		user.Role,
 		server.config.RefreshTokenDuration,
 	)
 	if err != nil {
