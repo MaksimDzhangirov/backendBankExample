@@ -33,7 +33,7 @@ write the tests!
 I'm gonna create a new file called `rpc_update_user_test.go` inside the 
 `gapi` package. Then, let's copy the unit tests that we wrote in the last
 lecture, paste them into the new file and change the name of the function
-to `TestUpdateUserAPI`. OK, net, let's change the type of the request
+to `TestUpdateUserAPI`. OK, next, let's change the type of the request
 to `pb.UpdateUserRequest`. For this API, we don't have an async task, so
 let's remove the mock task distributor from the `buildStubs` method. Then
 let's change the response type to `pb.UpdateUserResponse`.
@@ -172,7 +172,7 @@ buildStubs: func(store *mockdb.MockStore) {
 
 For this test, it will receive a `UpdateUserResponse` and an error object 
 as the output of the API. Since this is a happy case, we expect to see
-no errors, and the response should be not `nil`. WE'll get the updated
+no errors, and the response should be not `nil`. We'll get the updated
 user from the response, and check that the username stays the same, but
 the full name should be changed to `newName`, and the email should be
 changed to `newEmail`. And that's it!
@@ -303,7 +303,7 @@ testCases := []struct {
 
 The reason for adding this as part of the test case struct is, for 
 different cases, we might have different metadata, perhaps with an invalid
-oe expired access token, for example. Or even return a 
+or expired access token, for example. Or even return a 
 `context.Background()` if we don't want to send the token.
 
 ```go
@@ -358,9 +358,9 @@ tokenMaker.CreateToken()
 bearerToken := fmt.Sprintf("%s %s", authorizationBearer, accessToken)
 ```
 
-I pass in this  `CreateToken` method the user's username and a valid 
+I pass in this `CreateToken` method the user's username and a valid 
 duration of 1 minute. This method will return the access token string,
-a token payload, and an error. Wo don't use the token payload, so I leave
+a token payload, and an error. We don't use the token payload, so I leave
 it as a blank identifier. Then check that the returned error is `nil`
 with `require.NoError()` function.
 
@@ -370,8 +370,9 @@ require.NoError(t, err)
 ```
 
 We can make the code a bit shorter by putting this background context 
-directly in this `metadata.NewIncomingContext(ctx, md)` call. And that's 
-basically it. We're done adding an access token to the context's metadata.
+(`ctx := context.Background()`) directly in this 
+`metadata.NewIncomingContext(ctx, md)` call. And that's basically it. 
+We're done adding an access token to the context's metadata.
 
 ```go
 buildContext: func(t *testing.T, tokenMaker token.Maker) context.Context {
@@ -433,7 +434,7 @@ an empty user object, with an error: `sql.ErrNoRows`. The DB driver will
 return this error if the user is not found in the database.
 
 Now, since the `buildContext` function is exactly the same as the `OK` 
-case, let's refactor the code so we don't have a duplicate one here. This 
+case, let's refactor the code, so we don't have a duplicate one here. This 
 method can actually be made as a global function, that can be reused in 
 other RPC's unit tests as well. So I'm gonna put it in the `main_test.go` 
 file, and name it `newContextWithBearerToken()`. We'll have to add a 
@@ -485,7 +486,7 @@ require.Equal(t, codes.NotFound, st.Code())
 ```
 
 Basically, we convert the returned error into a status object, and require
-the code field of that object to be `NotFound`, since it's the value should
+the `Code` field of that object to be `NotFound`, since it's the value should
 be returned by the server in this case.
 
 Alright, all done. Now it's time to rerun the test!
@@ -530,7 +531,7 @@ Since the request should have already been rejected by the `authorizeUser()`
 call.
 
 And as I said before, we can build a context with an expired token. Just
-by passing in a negative value for the duration parameter.
+by passing in a negative value for the `duration` parameter.
 
 ```go
 buildContext: func(t *testing.T, tokenMaker token.Maker) context.Context {

@@ -224,8 +224,16 @@
 
 [64. How to test a gRPC API that requires authentication](docs/part64-eng.md)
 
-[64. ]
+[64. Как протестировать gRPC API, требующий аутентификации](docs/part64-rus.md)
 
 [65. Config sqlc version 2 for Go and Postgres](docs/part65-eng.md)
 
 [65. ]
+
+[66. Switch DB driver from lib/pq to pgx](docs/part66-eng.md)
+
+[66. ]
+
+[67. How to handle DB errors with PGX driver](docs/part67-eng.md)
+
+[67. ]
