@@ -1,7 +1,5 @@
 # Russian translation of article and video series
 
-[<img src="https://api.gitsponsors.com/api/badge/img?id=503773942" height="30">](https://api.gitsponsors.com/api/badge/link?p=KCaZU3OXgnhh/JDk+wJaWb/EJsoquqZoYsGhOvZx9ogIixQwuafHlaqJnCgTYcTTzmLZQ24rxeBimF2bs1chmQ==)
-
 [Backend master class (lectures)](https://dev.to/techschoolguru/series/7172)
 
 [YouTube Backend master class [Golang, Postgres, Docker] (videos)](https://www.youtube.com/watch?v=rx6CPDK_5mU&list=PLy_6D98if3ULEtXtNSY_2qN21VCKgoQAE)
