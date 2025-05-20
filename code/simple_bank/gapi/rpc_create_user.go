@@ -14,6 +14,7 @@ import (
 	"github.com/MaksimDzhangirov/backendBankExample/val"
 	"github.com/MaksimDzhangirov/backendBankExample/worker"
 	"github.com/hibiken/asynq"
+	"github.com/rs/zerolog/log"
 )
 
 func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest) (*pb.CreateUserResponse, error) {
@@ -47,6 +48,9 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 		},
 	}
 
+	log.Info().Msg(">> creating user ...")
+	time.Sleep(10 * time.Second)
+
 	txResult, err := server.store.CreateUserTx(ctx, arg)
 	if err != nil {
 		if db.ErrorCode(err) == db.UniqueViolation {
@@ -58,6 +62,8 @@ func (server *Server) CreateUser(ctx context.Context, req *pb.CreateUserRequest)
 	rsp := &pb.CreateUserResponse{
 		User: convertUser(txResult.User),
 	}
+
+	log.Info().Msg(">> creating user ...")
 	return rsp, nil
 }
 

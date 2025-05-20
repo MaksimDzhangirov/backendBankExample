@@ -56,7 +56,7 @@ First, in the "schema" field, we can specify a single SQL file containing
 the whole DB schema like in their example, or we can also set it to a folder 
 that contains all SQL migration files, which is "db/migration" in our 
 project. Then in the "queries" field, we should specify a folder 
-containing the SQL query files. In our case it is "db/query". The engine
+containing the SQL query files. In our case it is "db/query". The "engine"
 field is "postgresql", so we don't have to change it. Next, the "gen" 
 section of the config is where we tell `sqlc` how to generate codes for our
 target programming language, which is Golang. The "package" field should
@@ -124,7 +124,7 @@ sqlc version
 v1.18.0
 ```
 
-So now, let's run make sqlc to regenerate Golang codes for our queries.
+So now, let's run `make sqlc` to regenerate Golang codes for our queries.
 
 ```shell
 make sqlc
